@@ -3,16 +3,16 @@ const ACCOUNT_SCHEMA_VERSION = "v2";
 const DASHBOARD_ACCOUNTS = {
   ykdrxc: {
     username: "ykdrxc",
-    displayName: "ykdrxc",
+    displayName: "Drxco",
     role: "Owner",
     roleLabel: "Owner of Varsity Studios",
     passwordHash: "61b88d06fad14abc9f2f2b42e571d9231e8492ff52d9406a8c4cc3d2cf411f81"
   },
   rundownbjay: {
     username: "rundownbjay",
-    displayName: "rundownbjay",
+    displayName: "Bj",
     role: "Member",
-    roleLabel: "Varsity Studios Member",
+    roleLabel: "Member of Varsity Studios",
     passwordHash: "90d6fbbff3b79a8806f0db3478e757078fe263aabda49c23626db34d3e9f13db"
   }
 };
@@ -2760,7 +2760,7 @@ const WORKSPACE_PROFILE_KEY = "varsityDashboardWorkspaceProfile";
 
 const defaultWorkspaceProfile = {
   studioName: "Varsity Studios",
-  ownerName: "ykdrxc",
+  ownerName: "Drxco",
   dashboardName: "Varsity Studios Dashboard",
   defaultGame: "",
   groupId: "",
@@ -2822,11 +2822,18 @@ function applyWorkspaceProfile() {
     element.textContent = (workspaceProfile.studioName || "Varsity Studios").toUpperCase();
   });
 
-  const signedInName = document.querySelector(".signed-in strong");
-  const signedInRole = document.querySelector(".signed-in small");
+  const metaDescription = document.querySelector('meta[name="description"]');
+  if (metaDescription) {
+    metaDescription.setAttribute(
+      "content",
+      workspaceProfile.studioDescription ||
+        "Roblox sports game development and production workspace."
+    );
+  }
 
-  if (signedInName) signedInName.textContent = workspaceProfile.ownerName || "ykdrxc";
-  if (signedInRole) signedInRole.textContent = `Owner of ${workspaceProfile.studioName || "Varsity Studios"}`;
+  if (currentUser) {
+    updateSignedInIdentity();
+  }
 }
 
 const baseAdvancedRenderNavigation = renderNavigation;
@@ -2893,7 +2900,7 @@ renderMainDashboard = function renderAdvancedMainDashboard() {
   const welcomeText = tabContent.querySelector(".welcome-panel p");
 
   if (welcomeHeading) {
-    welcomeHeading.textContent = `Welcome back, ${workspaceProfile.ownerName || "ykdrxc"}.`;
+    welcomeHeading.textContent = `Welcome back, ${getSignedInUser().displayName}.`;
   }
 
   if (welcomeText) {
@@ -2954,7 +2961,7 @@ renderSettingsPage = function renderAdvancedSettingsPage() {
         </label>
 
         <label>
-          <span>Owner display name</span>
+          <span>Studio owner display name</span>
           <input id="workspaceOwnerName" type="text" maxlength="50" value="${escapeAttribute(workspaceProfile.ownerName)}" required />
         </label>
 
@@ -2979,7 +2986,7 @@ renderSettingsPage = function renderAdvancedSettingsPage() {
         </label>
 
         <label class="workspace-profile-wide">
-          <span>Studio description</span>
+          <span>Website / studio description</span>
           <textarea id="workspaceStudioDescription" maxlength="300">${escapeHtml(workspaceProfile.studioDescription)}</textarea>
         </label>
 

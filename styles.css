@@ -7746,3 +7746,153 @@ body.auth-unlocked #dashboardView {
     min-height: 100dvh;
   }
 }
+
+
+/* Account identity placement + display-name fixes */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.topbar-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 7px 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.025);
+}
+
+.topbar-account .signed-in {
+  min-width: 0;
+  padding: 0;
+}
+
+.topbar-account .signed-in > div {
+  min-width: 0;
+}
+
+.topbar-account .signed-in strong,
+.topbar-account .signed-in small {
+  display: block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-account .signed-in strong {
+  font-size: 0.74rem;
+}
+
+.topbar-account .signed-in small {
+  margin-top: 2px;
+  font-size: 0.61rem;
+}
+
+.topbar-logout {
+  min-height: 32px;
+}
+
+.sidebar-footer:empty {
+  min-height: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+body[data-ui-style-version="glass"] .topbar-account {
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(16px);
+}
+
+body[data-ui-style-version="studio-3d"] .topbar-account {
+  box-shadow:
+    0 10px 22px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+body[data-theme-mode="light"] .topbar-account {
+  background: rgba(255,255,255,0.76);
+  border-color: rgba(20,22,28,0.1);
+}
+
+@media (max-width: 1050px) {
+  .topbar-right {
+    flex-wrap: wrap;
+  }
+
+  .topbar-account .signed-in small {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .topbar {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+  }
+
+  .topbar-right {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    margin: 0;
+  }
+
+  .topbar-right > #addTabButton {
+    position: fixed;
+    right: 14px;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    z-index: 8000;
+    width: auto !important;
+    min-height: 46px;
+    padding-inline: 15px;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.36);
+  }
+
+  .topbar-account {
+    padding: 5px 6px 5px 8px;
+  }
+
+  .topbar-account .status-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .topbar-account .signed-in strong {
+    max-width: 82px;
+    font-size: 0.67rem;
+  }
+
+  .topbar-account .topbar-logout {
+    min-width: auto;
+    padding-inline: 7px;
+    font-size: 0.61rem !important;
+  }
+
+  .topbar > .primary-button {
+    grid-column: auto !important;
+    width: auto !important;
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar-account .signed-in > .status-dot,
+  .topbar-account .signed-in small {
+    display: none;
+  }
+
+  .topbar-account {
+    gap: 5px;
+    padding-left: 7px;
+  }
+
+  .topbar-account .signed-in strong {
+    max-width: 64px;
+  }
+}

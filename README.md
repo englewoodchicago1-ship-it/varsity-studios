@@ -304,3 +304,12 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Login no longer depends entirely on the browser Web Crypto API.
 - Added a built-in SHA-256 compatibility fallback for browsers/contexts where Web Crypto is unavailable.
 - Added visible login initialization errors instead of silent failures.
+
+
+## Display names and account placement
+- `ykdrxc` displays as **Drxco** inside the dashboard.
+- `rundownbjay` displays as **Bj** inside the dashboard.
+- Signed-in account information now appears on the right side of the top bar instead of the left sidebar.
+- Member dashboard headings no longer inherit the owner's display name.
+- Website / studio description is editable from Owner Settings → Workspace Identity.
+- The editable studio description also updates the site's HTML meta description.

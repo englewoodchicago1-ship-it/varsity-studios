@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Roblox sports game development and production workspace." />
   <meta name="theme-color" content="#110000" />
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/favicon.png" />
@@ -90,16 +91,7 @@
       <div class="sidebar-label">WORKSPACE</div>
       <nav id="sidebarTabs" class="sidebar-tabs" aria-label="Dashboard tabs"></nav>
 
-      <div class="sidebar-footer">
-        <div class="signed-in">
-          <span class="status-dot"></span>
-          <div>
-            <strong>ykdrxc</strong>
-            <small>Owner of Varsity Studios</small>
-          </div>
-        </div>
-        <button id="logoutButton" class="secondary-button" type="button">Log out</button>
-      </div>
+      <div class="sidebar-footer"></div>
     </aside>
 
     <div id="mobileSidebarBackdrop" class="mobile-sidebar-backdrop hidden"></div>
@@ -113,9 +105,24 @@
           <h1 id="pageTitle">Dashboard</h1>
           <p id="pageSubtitle" class="page-subtitle">Manage your custom dashboard tabs.</p>
         </div>
-        <button id="addTabButton" class="primary-button compact" type="button">
-          + Create tab
-        </button>
+        <div class="topbar-right">
+          <button id="addTabButton" class="primary-button compact" type="button">
+            + Create tab
+          </button>
+
+          <div class="topbar-account">
+            <div class="signed-in">
+              <span class="status-dot"></span>
+              <div>
+                <strong>Account</strong>
+                <small>Varsity Studios</small>
+              </div>
+            </div>
+            <button id="logoutButton" class="secondary-button compact topbar-logout" type="button">
+              Log out
+            </button>
+          </div>
+        </div>
       </header>
 
       <div class="content-shell">
