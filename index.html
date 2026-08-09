@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#110000" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/favicon.png" />
+  <title>Varsity Studios Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div id="siteLoadingScreen" class="site-loading-screen" aria-label="Loading Varsity Studios Dashboard">
+    <div class="site-loading-content">
+      <img src="assets/varsity-logo.png" alt="Varsity Studios logo" class="site-loading-logo" />
+      <div class="site-loading-title">VARSITY STUDIOS</div>
+      <div class="site-loading-subtitle">Loading Dashboard</div>
+
+      <div class="site-loading-track" aria-hidden="true">
+        <div id="siteLoadingProgress" class="site-loading-progress"></div>
+      </div>
+
+      <div id="siteLoadingStatus" class="site-loading-status">Preparing workspace...</div>
+    </div>
+  </div>
+
+  <div class="background-glow" aria-hidden="true"></div>
+
+  <main id="loginView" class="login-view">
+    <div class="login-background-title" aria-hidden="true">
+      <span>VARSITY STUDIOS</span>
+      <strong>LOG IN</strong>
+    </div>
+    <section class="login-card" aria-labelledby="loginTitle">
+      <div class="brand brand-centered">
+        <img src="assets/varsity-logo.png" alt="Varsity Studios logo" class="brand-logo login-logo" />
+        <div>
+          <p class="eyebrow">VARSITY STUDIOS</p>
+          <h1 id="loginTitle">Dashboard</h1>
+        </div>
+      </div>
+
+      <form id="loginForm" class="login-form" autocomplete="off">
+        <label for="username">Username</label>
+        <div class="field-wrap">
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="Enter username"
+            spellcheck="false"
+            autocomplete="username"
+            required
+          />
+          <span class="field-icon" aria-hidden="true">●</span>
+        </div>
+
+        <label for="password">Password</label>
+        <div class="field-wrap">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Enter password"
+            autocomplete="current-password"
+            required
+          />
+          <button id="togglePassword" class="password-toggle" type="button" aria-label="Show password">
+            Show
+          </button>
+        </div>
+
+        <p id="loginError" class="login-error" role="alert" aria-live="polite"></p>
+        <button class="primary-button" type="submit">LOG IN</button>
+      </form>
+    </section>
+  </main>
+
+  <main id="dashboardView" class="dashboard-view hidden">
+    <aside class="sidebar">
+      <div class="brand sidebar-brand">
+        <img src="assets/varsity-logo.png" alt="Varsity Studios logo" class="brand-logo sidebar-logo" />
+        <div>
+          <p class="eyebrow">VARSITY</p>
+          <h2>STUDIOS</h2>
+        </div>
+      </div>
+
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav id="sidebarTabs" class="sidebar-tabs" aria-label="Dashboard tabs"></nav>
+
+      <div class="sidebar-footer">
+        <div class="signed-in">
+          <span class="status-dot"></span>
+          <div>
+            <strong>ykdrxc</strong>
+            <small>Owner of Varsity Studios</small>
+          </div>
+        </div>
+        <button id="logoutButton" class="secondary-button" type="button">Log out</button>
+      </div>
+    </aside>
+
+    <section class="dashboard-main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">VARSITY STUDIOS</p>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle" class="page-subtitle">Manage your custom dashboard tabs.</p>
+        </div>
+        <button id="addTabButton" class="primary-button compact" type="button">
+          + Create tab
+        </button>
+      </header>
+
+      <div class="content-shell">
+        <div class="content-header">
+          <div>
+            <span class="content-kicker">CURRENT TAB</span>
+            <h2 id="contentTitle">Dashboard</h2>
+          </div>
+          <div class="content-actions">
+            <button id="addFolderButton" class="secondary-button add-folder-button" type="button"><span>+</span> Add folder</button>
+            <button id="deleteTabButton" class="danger-button" type="button">Delete tab</button>
+          </div>
+        </div>
+
+        <div id="tabContent" class="tab-content">
+          <div class="empty-state">
+            <div class="empty-icon">V</div>
+            <h3>Your Varsity Studios workspace</h3>
+            <p>Create tabs for game updates, development tasks, staff information, analytics, or anything else you need.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="tabDialog" class="modal">
+    <form id="tabForm" method="dialog" class="modal-card">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">NEW WORKSPACE TAB</p>
+          <h2>Create a tab</h2>
+        </div>
+        <button id="closeDialogButton" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+
+      <label for="tabName">Tab name</label>
+      <input id="tabName" type="text" maxlength="24" placeholder="Example: Game Updates" required />
+
+      <label for="tabDescription">Description</label>
+      <textarea id="tabDescription" maxlength="120" placeholder="What will this tab be used for?"></textarea>
+
+      <div class="modal-actions">
+        <button id="cancelDialogButton" class="secondary-button" type="button">Cancel</button>
+        <button class="primary-button compact" type="submit">Create tab</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <dialog id="folderDialog" class="modal">
+    <form id="folderForm" method="dialog" class="modal-card">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">NEW FOLDER</p>
+          <h2>Add folder to tab</h2>
+        </div>
+        <button id="closeFolderDialogButton" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+
+      <label for="folderName">Folder name</label>
+      <input id="folderName" type="text" maxlength="32" placeholder="Example: Development" required />
+
+      <label for="folderDescription">Folder description</label>
+      <textarea id="folderDescription" maxlength="180" placeholder="Describe what belongs in this folder." required></textarea>
+
+      <div class="modal-actions">
+        <button id="cancelFolderDialogButton" class="secondary-button" type="button">Cancel</button>
+        <button class="primary-button compact" type="submit">Add folder</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <dialog id="animationDialog" class="modal">
+    <form id="animationForm" method="dialog" class="modal-card">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">ANIMATIONS FOLDER</p>
+          <h2>Add animation</h2>
+        </div>
+        <button id="closeAnimationDialogButton" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+
+      <label for="animationName">Animation name</label>
+      <input
+        id="animationName"
+        type="text"
+        maxlength="40"
+        placeholder="Example: Touchdown Celebration"
+        required
+      />
+
+      <label for="animationId">Roblox animation ID</label>
+      <input
+        id="animationId"
+        type="text"
+        inputmode="numeric"
+        maxlength="30"
+        placeholder="Example: 1234567890"
+        required
+      />
+
+      <p id="animationError" class="form-error" role="alert" aria-live="polite"></p>
+
+      <div class="modal-actions">
+        <button id="cancelAnimationDialogButton" class="secondary-button" type="button">Cancel</button>
+        <button class="primary-button compact" type="submit">Add animation</button>
+      </div>
+    </form>
+  </dialog>
+
+  <input
+    id="modelUploadInput"
+    type="file"
+    multiple
+    hidden
+  />
+
+  <input
+    id="imageUploadInput"
+    type="file"
+    accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+    multiple
+    hidden
+  />
+
+
+  <dialog id="modelDialog" class="modal">
+    <form id="modelForm" method="dialog" class="modal-card">
+      <div class="modal-heading">
+        <div>
+          <p class="eyebrow">MODELS FOLDER</p>
+          <h2>Save uploaded model</h2>
+        </div>
+        <button id="closeModelDialogButton" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div class="selected-file-box">
+        <span>SELECTED FILE</span>
+        <strong id="selectedModelFileName">No file selected</strong>
+      </div>
+
+      <label for="modelName">Model name</label>
+      <input id="modelName" type="text" maxlength="50" placeholder="Example: Football Stadium" required />
+
+      <label for="modelDescription">Model description</label>
+      <textarea id="modelDescription" maxlength="240" placeholder="Describe this model and what it is used for." required></textarea>
+
+      <p id="modelError" class="form-error" role="alert" aria-live="polite"></p>
+
+      <div class="modal-actions">
+        <button id="cancelModelDialogButton" class="secondary-button" type="button">Cancel</button>
+        <button class="primary-button compact" type="submit">Save model</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <dialog id="editItemDialog" class="modal">
+    <form id="editItemForm" method="dialog" class="modal-card">
+      <div class="modal-heading">
+        <div>
+          <p id="editItemKicker" class="eyebrow">EDIT ITEM</p>
+          <h2 id="editItemTitle">Edit</h2>
+        </div>
+        <button id="closeEditItemDialogButton" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+
+      <label id="editPrimaryLabel" for="editPrimaryInput">Name</label>
+      <input id="editPrimaryInput" type="text" maxlength="80" required />
+
+      <div id="editSecondaryField">
+        <label id="editSecondaryLabel" for="editSecondaryInput">Description</label>
+        <textarea id="editSecondaryInput" maxlength="300"></textarea>
+      </div>
+
+      <p id="editItemError" class="form-error" role="alert" aria-live="polite"></p>
+
+      <div class="modal-actions">
+        <button id="cancelEditItemDialogButton" class="secondary-button" type="button">Cancel</button>
+        <button class="primary-button compact" type="submit">Save changes</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <dialog id="confirmationDialog" class="confirmation-dialog">
+    <div class="confirmation-card">
+      <div class="confirmation-icon" aria-hidden="true">!</div>
+
+      <div class="confirmation-copy">
+        <p class="eyebrow">CONFIRM ACTION</p>
+        <h2 id="confirmationTitle">Are you sure?</h2>
+        <p id="confirmationMessage">This action cannot be undone.</p>
+      </div>
+
+      <div class="confirmation-actions">
+        <button id="confirmationCancelButton" class="secondary-button" type="button">Cancel</button>
+        <button id="confirmationContinueButton" class="danger-button confirmation-continue" type="button">Yes, delete</button>
+      </div>
+    </div>
+  </dialog>
+
+
+  <div id="tutorialOverlay" class="tutorial-overlay hidden" aria-hidden="true">
+    <div id="tutorialSpotlight" class="tutorial-spotlight"></div>
+
+    <section id="tutorialCard" class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+      <div class="tutorial-card-top">
+        <span id="tutorialStepLabel" class="tutorial-step-label">STEP 1 OF 10</span>
+        <button id="tutorialCloseButton" class="tutorial-close-button" type="button" aria-label="Close tutorial">×</button>
+      </div>
+
+      <div class="tutorial-icon" id="tutorialIcon">V</div>
+
+      <div class="tutorial-copy">
+        <h2 id="tutorialTitle">Welcome</h2>
+        <p id="tutorialDescription">This tutorial will guide you through the dashboard.</p>
+      </div>
+
+      <div class="tutorial-progress-track">
+        <span id="tutorialProgressBar"></span>
+      </div>
+
+      <div class="tutorial-actions">
+        <button id="tutorialSkipButton" class="secondary-button" type="button">Skip tutorial</button>
+
+        <div>
+          <button id="tutorialBackButton" class="secondary-button" type="button">Back</button>
+          <button id="tutorialContinueButton" class="primary-button compact" type="button">Continue</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
