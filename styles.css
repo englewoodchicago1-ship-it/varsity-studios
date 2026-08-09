@@ -7684,3 +7684,65 @@ body[data-account-role="member"] [data-owner-only] {
     transform: none !important;
   }
 }
+
+
+/* Strict pre-login access gate */
+.hidden,
+[hidden] {
+  display: none !important;
+}
+
+/*
+  Authentication owns visibility before every other responsive rule.
+  This intentionally comes after the mobile CSS so mobile cannot override it.
+*/
+body.auth-locked #dashboardView,
+body.auth-locked .dashboard-view,
+body.auth-locked #mobileSidebarBackdrop,
+body.auth-locked .mobile-sidebar-backdrop,
+body.auth-locked .sidebar,
+body.auth-locked .dashboard-main {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.auth-locked #loginView,
+body.auth-locked .login-view {
+  display: flex !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+body.auth-locked {
+  overflow: hidden;
+}
+
+body.auth-locked .side-v-background-scene {
+  display: none !important;
+}
+
+body.auth-unlocked #loginView,
+body.auth-unlocked .login-view {
+  display: none !important;
+}
+
+body.auth-unlocked #dashboardView {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+@media (max-width: 860px) {
+  body.auth-locked #dashboardView,
+  body.auth-locked .dashboard-view,
+  body.auth-locked .sidebar,
+  body.auth-locked .dashboard-main {
+    display: none !important;
+  }
+
+  body.auth-locked #loginView,
+  body.auth-locked .login-view {
+    display: flex !important;
+    min-height: 100dvh;
+  }
+}

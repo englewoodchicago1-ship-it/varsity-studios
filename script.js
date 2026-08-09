@@ -27,19 +27,19 @@ function accountStorageKey(key) {
 function accountStorageGet(key) {
   const resolved = accountStorageKey(key);
   if (!resolved) return null;
-  return window.accountStorageGet(resolved);
+  return window.localStorage.getItem(resolved);
 }
 
 function accountStorageSet(key, value) {
   const resolved = accountStorageKey(key);
   if (!resolved) return;
-  window.accountStorageSet(resolved, value);
+  window.localStorage.setItem(resolved, value);
 }
 
 function accountStorageRemove(key) {
   const resolved = accountStorageKey(key);
   if (!resolved) return;
-  window.accountStorageRemove(resolved);
+  window.localStorage.removeItem(resolved);
 }
 
 async function sha256Text(value) {
@@ -200,8 +200,14 @@ function saveData() {
 }
 
 function setLoggedIn(value) {
+  document.body.classList.toggle("auth-locked", !value);
+  document.body.classList.toggle("auth-unlocked", value);
+
   loginView.classList.toggle("hidden", value);
   dashboardView.classList.toggle("hidden", !value);
+
+  dashboardView.setAttribute("aria-hidden", value ? "false" : "true");
+  loginView.setAttribute("aria-hidden", value ? "true" : "false");
 
   if (value) {
     dashboardView.classList.remove("dashboard-enter");
@@ -209,6 +215,11 @@ function setLoggedIn(value) {
     dashboardView.classList.add("dashboard-enter");
     renderNavigation();
   } else {
+    document.body.classList.remove("mobile-sidebar-open");
+
+    const mobileBackdrop = document.getElementById("mobileSidebarBackdrop");
+    if (mobileBackdrop) mobileBackdrop.classList.add("hidden");
+
     usernameInput.value = "";
     passwordInput.value = "";
     passwordInput.type = "password";
@@ -953,12 +964,19 @@ loginForm.addEventListener("submit", async event => {
     return;
   }
 
-  currentUser = account;
-  reloadSignedInAccountState();
-  loginError.textContent = "";
-  setLoggedIn(true);
-  updateSignedInIdentity();
-  setupMobileDashboardControls();
+  try {
+    currentUser = account;
+    reloadSignedInAccountState();
+    loginError.textContent = "";
+    setLoggedIn(true);
+    updateSignedInIdentity();
+    setupMobileDashboardControls();
+  } catch (error) {
+    console.error("[LOGIN] Failed to initialize account workspace:", error);
+    currentUser = null;
+    loginError.textContent = "Login succeeded, but the dashboard failed to load. Refresh and try again.";
+    return;
+  }
 
   if (accountStorageGet(TUTORIAL_STORAGE_KEY) !== "true") {
     setTimeout(() => {
@@ -7070,3 +7088,64 @@ function setupMobileDashboardControls() {
     if (window.innerWidth > 860) close();
   });
 }
+
+
+/* Strict pre-login access gate */
+function isDashboardAuthenticated() {
+  return Boolean(currentUser) && document.body.classList.contains("auth-unlocked");
+}
+
+function guardDashboardAction(event) {
+  if (isDashboardAuthenticated()) return true;
+
+  if (event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+
+  document.body.classList.add("auth-locked");
+  document.body.classList.remove("auth-unlocked", "mobile-sidebar-open");
+
+  loginView.classList.remove("hidden");
+  dashboardView.classList.add("hidden");
+
+  const mobileBackdrop = document.getElementById("mobileSidebarBackdrop");
+  if (mobileBackdrop) mobileBackdrop.classList.add("hidden");
+
+  loginError.textContent = "Sign in before accessing the Varsity Studios dashboard.";
+  usernameInput.focus();
+  return false;
+}
+
+document.addEventListener("click", event => {
+  if (isDashboardAuthenticated()) return;
+
+  const protectedControl = event.target.closest(
+    "#dashboardView button, #dashboardView a, #dashboardView input, #dashboardView select, #dashboardView textarea"
+  );
+
+  if (protectedControl) {
+    guardDashboardAction(event);
+  }
+}, true);
+
+document.addEventListener("keydown", event => {
+  if (isDashboardAuthenticated()) return;
+
+  const protectedTarget = event.target.closest?.(
+    "#dashboardView button, #dashboardView a, #dashboardView input, #dashboardView select, #dashboardView textarea"
+  );
+
+  if (protectedTarget || document.body.classList.contains("mobile-sidebar-open")) {
+    guardDashboardAction(event);
+  }
+}, true);
+
+// Lock immediately on every page load. No session is restored from browser storage.
+currentUser = null;
+document.body.classList.add("auth-locked");
+document.body.classList.remove("auth-unlocked", "mobile-sidebar-open");
+loginView.classList.remove("hidden");
+dashboardView.classList.add("hidden");
+dashboardView.setAttribute("aria-hidden", "true");
+loginView.setAttribute("aria-hidden", "false");

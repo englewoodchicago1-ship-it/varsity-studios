@@ -285,3 +285,16 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Mobile overlay/backdrop
 - Responsive dashboard cards, folder lists, dialogs, settings, and tutorial
 - Better phone-safe spacing and native input sizing
+
+
+## Login hotfix
+- Fixed account storage initialization after successful login.
+- Fixed an incorrect browser-storage helper call that prevented the dashboard from loading after valid credentials.
+
+
+## Strict pre-login access gate
+- Dashboard starts fully locked on every page load.
+- No dashboard tabs, folders, create buttons, settings, sidebar, or mobile navigation are available before authentication.
+- Mobile responsive rules can no longer accidentally reveal the dashboard.
+- Protected dashboard controls are blocked at the event level until a valid account is signed in.
+- Login is still required again after a refresh or reopening the page.
