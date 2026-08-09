@@ -43,11 +43,122 @@ function accountStorageRemove(key) {
 }
 
 async function sha256Text(value) {
-  const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest))
-    .map(byte => byte.toString(16).padStart(2, "0"))
-    .join("");
+  // Use Web Crypto when available, but do not make login depend on HTTPS/WebCrypto.
+  if (window.crypto?.subtle && window.TextEncoder) {
+    try {
+      const bytes = new TextEncoder().encode(value);
+      const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(digest))
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+    } catch (error) {
+      console.warn("[LOGIN] Web Crypto unavailable, using compatibility hash.", error);
+    }
+  }
+
+  return sha256Compatibility(value);
+}
+
+function sha256Compatibility(input) {
+  const rightRotate = (value, amount) =>
+    (value >>> amount) | (value << (32 - amount));
+
+  const maxWord = Math.pow(2, 32);
+  let result = "";
+
+  const words = [];
+  const asciiBitLength = input.length * 8;
+
+  const hash = [];
+  const k = [];
+  let primeCounter = 0;
+
+  const isComposite = {};
+
+  for (let candidate = 2; primeCounter < 64; candidate += 1) {
+    if (!isComposite[candidate]) {
+      for (let multiple = candidate * candidate; multiple < 313; multiple += candidate) {
+        isComposite[multiple] = true;
+      }
+
+      if (primeCounter < 8) {
+        hash[primeCounter] =
+          (Math.pow(candidate, 0.5) * maxWord) | 0;
+      }
+
+      k[primeCounter] =
+        (Math.pow(candidate, 1 / 3) * maxWord) | 0;
+
+      primeCounter += 1;
+    }
+  }
+
+  input = unescape(encodeURIComponent(input));
+  input += "\\x80";
+
+  while ((input.length % 64) !== 56) {
+    input += "\\x00";
+  }
+
+  for (let index = 0; index < input.length; index += 1) {
+    const code = input.charCodeAt(index);
+
+    words[index >> 2] |= code << ((3 - index) % 4) * 8;
+  }
+
+  words[words.length] = Math.floor(asciiBitLength / maxWord);
+  words[words.length] = asciiBitLength;
+
+  for (let block = 0; block < words.length; block += 16) {
+    const w = words.slice(block, block + 16);
+    const oldHash = hash.slice(0);
+
+    for (let round = 0; round < 64; round += 1) {
+      const w15 = w[round - 15];
+      const w2 = w[round - 2];
+
+      const a = hash[0];
+      const e = hash[4];
+
+      const temp1 =
+        hash[7] +
+        (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) +
+        ((e & hash[5]) ^ (~e & hash[6])) +
+        k[round] +
+        (
+          w[round] =
+            round < 16
+              ? w[round]
+              : (
+                  w[round - 16] +
+                  (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) +
+                  w[round - 7] +
+                  (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+                ) | 0
+        );
+
+      const temp2 =
+        (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) +
+        ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+
+      hash.pop();
+      hash.unshift((temp1 + temp2) | 0);
+      hash[4] = (hash[4] + temp1) | 0;
+    }
+
+    for (let index = 0; index < 8; index += 1) {
+      hash[index] = (hash[index] + oldHash[index]) | 0;
+    }
+  }
+
+  for (let index = 0; index < 8; index += 1) {
+    for (let byte = 3; byte + 1; byte -= 1) {
+      const b = (hash[index] >> (byte * 8)) & 255;
+      result += (b < 16 ? "0" : "") + b.toString(16);
+    }
+  }
+
+  return result;
 }
 
 function hasOwnerAccess() {
@@ -950,9 +1061,19 @@ function openTabDialog() {
 loginForm.addEventListener("submit", async event => {
   event.preventDefault();
 
+  loginError.textContent = "";
+
   const username = usernameInput.value.trim().toLowerCase();
   const account = DASHBOARD_ACCOUNTS[username];
-  const submittedHash = await sha256Text(passwordInput.value);
+
+  let submittedHash = "";
+  try {
+    submittedHash = await sha256Text(passwordInput.value);
+  } catch (error) {
+    console.error("[LOGIN] Password verification failed:", error);
+    loginError.textContent = "Login system failed to initialize. Refresh the page and try again.";
+    return;
+  }
 
   if (!account || submittedHash !== account.passwordHash) {
     loginError.textContent = "Incorrect username or password.";

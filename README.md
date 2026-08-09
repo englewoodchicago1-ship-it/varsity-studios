@@ -298,3 +298,9 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Mobile responsive rules can no longer accidentally reveal the dashboard.
 - Protected dashboard controls are blocked at the event level until a valid account is signed in.
 - Login is still required again after a refresh or reopening the page.
+
+
+## Login compatibility fix
+- Login no longer depends entirely on the browser Web Crypto API.
+- Added a built-in SHA-256 compatibility fallback for browsers/contexts where Web Crypto is unavailable.
+- Added visible login initialization errors instead of silent failures.
