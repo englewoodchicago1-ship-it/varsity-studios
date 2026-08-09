@@ -1,5 +1,67 @@
-const VALID_USERNAME = "ykdrxc";
-const VALID_PASSWORD = "JamalJackson21";
+const ACCOUNT_SCHEMA_VERSION = "v2";
+
+const DASHBOARD_ACCOUNTS = {
+  ykdrxc: {
+    username: "ykdrxc",
+    displayName: "ykdrxc",
+    role: "Owner",
+    roleLabel: "Owner of Varsity Studios",
+    passwordHash: "61b88d06fad14abc9f2f2b42e571d9231e8492ff52d9406a8c4cc3d2cf411f81"
+  },
+  rundownbjay: {
+    username: "rundownbjay",
+    displayName: "rundownbjay",
+    role: "Member",
+    roleLabel: "Varsity Studios Member",
+    passwordHash: "90d6fbbff3b79a8806f0db3478e757078fe263aabda49c23626db34d3e9f13db"
+  }
+};
+
+let currentUser = null;
+
+function accountStorageKey(key) {
+  if (!currentUser) return null;
+  return `varsity:${ACCOUNT_SCHEMA_VERSION}:${currentUser.username}:${key}`;
+}
+
+function accountStorageGet(key) {
+  const resolved = accountStorageKey(key);
+  if (!resolved) return null;
+  return window.accountStorageGet(resolved);
+}
+
+function accountStorageSet(key, value) {
+  const resolved = accountStorageKey(key);
+  if (!resolved) return;
+  window.accountStorageSet(resolved, value);
+}
+
+function accountStorageRemove(key) {
+  const resolved = accountStorageKey(key);
+  if (!resolved) return;
+  window.accountStorageRemove(resolved);
+}
+
+async function sha256Text(value) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function hasOwnerAccess() {
+  return currentUser?.role === "Owner";
+}
+
+function getSignedInUser() {
+  return currentUser || {
+    username: "guest",
+    displayName: "Guest",
+    role: "Member",
+    roleLabel: "Varsity Studios Member"
+  };
+}
 
 const STORAGE_KEYS = {
   tabs: "varsityDashboardTabs",
@@ -93,8 +155,8 @@ const cancelModelDialogButton = document.getElementById("cancelModelDialogButton
 const imageUploadInput = document.getElementById("imageUploadInput");
 const modelUploadInput = document.getElementById("modelUploadInput");
 
-let tabs = loadTabs();
-let activeView = localStorage.getItem(STORAGE_KEYS.activeView) || "main";
+let tabs = structuredClone(defaultTabs);
+let activeView = "main";
 let activeAnimationFolderId = null;
 let activeImageFolderId = null;
 let activeModelFolderId = null;
@@ -103,7 +165,7 @@ let pendingModelFile = null;
 
 function loadTabs() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.tabs));
+    const saved = JSON.parse(accountStorageGet(STORAGE_KEYS.tabs));
 
     if (!Array.isArray(saved) || !saved.length) {
       return structuredClone(defaultTabs);
@@ -128,8 +190,8 @@ function loadTabs() {
 
 function saveData() {
   try {
-    localStorage.setItem(STORAGE_KEYS.tabs, JSON.stringify(tabs));
-    localStorage.setItem(STORAGE_KEYS.activeView, activeView);
+    accountStorageSet(STORAGE_KEYS.tabs, JSON.stringify(tabs));
+    accountStorageSet(STORAGE_KEYS.activeView, activeView);
     return true;
   } catch {
     window.alert("Browser storage is full. Delete a large image or model file, then try again.");
@@ -276,8 +338,8 @@ function renderMainDashboard() {
     <div class="main-dashboard">
       <section class="welcome-panel">
         <div>
-          <span class="dashboard-kicker">VARSITY STUDIOS OWNER</span>
-          <h3>Welcome back, ykdrxc.</h3>
+          <span class="dashboard-kicker" data-user-role-kicker>VARSITY STUDIOS</span>
+          <h3 data-user-welcome>Welcome back.</h3>
           <p>Keep your game assets, Roblox animations, model files, images, icons, and useful websites organized in one place.</p>
         </div>
         <img src="assets/varsity-logo.png" alt="Varsity Studios logo" />
@@ -874,10 +936,14 @@ function openTabDialog() {
   setTimeout(() => tabName.focus(), 0);
 }
 
-loginForm.addEventListener("submit", event => {
+loginForm.addEventListener("submit", async event => {
   event.preventDefault();
 
-  if (usernameInput.value.trim() !== VALID_USERNAME || passwordInput.value !== VALID_PASSWORD) {
+  const username = usernameInput.value.trim().toLowerCase();
+  const account = DASHBOARD_ACCOUNTS[username];
+  const submittedHash = await sha256Text(passwordInput.value);
+
+  if (!account || submittedHash !== account.passwordHash) {
     loginError.textContent = "Incorrect username or password.";
     loginForm.classList.remove("login-shake");
     void loginForm.offsetWidth;
@@ -887,8 +953,20 @@ loginForm.addEventListener("submit", event => {
     return;
   }
 
+  currentUser = account;
+  reloadSignedInAccountState();
   loginError.textContent = "";
   setLoggedIn(true);
+  updateSignedInIdentity();
+  setupMobileDashboardControls();
+
+  if (accountStorageGet(TUTORIAL_STORAGE_KEY) !== "true") {
+    setTimeout(() => {
+      if (!dashboardView.classList.contains("hidden")) {
+        startDashboardTutorial();
+      }
+    }, 850);
+  }
 });
 
 togglePassword.addEventListener("click", () => {
@@ -897,7 +975,11 @@ togglePassword.addEventListener("click", () => {
   togglePassword.textContent = hidden ? "Hide" : "Show";
 });
 
-logoutButton.addEventListener("click", () => setLoggedIn(false));
+logoutButton.addEventListener("click", () => {
+  currentUser = null;
+  setLoggedIn(false);
+  window.location.reload();
+});
 addTabButton.addEventListener("click", openTabDialog);
 
 tabForm.addEventListener("submit", event => {
@@ -1723,7 +1805,7 @@ function loadDashboardSettings() {
   try {
     return {
       ...defaultSettings,
-      ...JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || "{}")
+      ...JSON.parse(accountStorageGet(SETTINGS_STORAGE_KEY) || "{}")
     };
   } catch {
     return { ...defaultSettings };
@@ -1731,12 +1813,12 @@ function loadDashboardSettings() {
 }
 
 function saveDashboardSettings() {
-  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(dashboardSettings));
+  accountStorageSet(SETTINGS_STORAGE_KEY, JSON.stringify(dashboardSettings));
 }
 
 function loadDeveloperData() {
   try {
-    const saved = JSON.parse(localStorage.getItem(DEV_STORAGE_KEY) || "{}");
+    const saved = JSON.parse(accountStorageGet(DEV_STORAGE_KEY) || "{}");
     return {
       projects: Array.isArray(saved.projects) ? saved.projects : [],
       tasks: Array.isArray(saved.tasks) ? saved.tasks : [],
@@ -1749,7 +1831,7 @@ function loadDeveloperData() {
 }
 
 function saveDeveloperData() {
-  localStorage.setItem(DEV_STORAGE_KEY, JSON.stringify(developerData));
+  accountStorageSet(DEV_STORAGE_KEY, JSON.stringify(developerData));
 }
 
 function applyDashboardSettings() {
@@ -2562,7 +2644,7 @@ function loadWorkspaceProfile() {
   try {
     return {
       ...defaultWorkspaceProfile,
-      ...JSON.parse(localStorage.getItem(WORKSPACE_PROFILE_KEY) || "{}")
+      ...JSON.parse(accountStorageGet(WORKSPACE_PROFILE_KEY) || "{}")
     };
   } catch {
     return { ...defaultWorkspaceProfile };
@@ -2570,13 +2652,13 @@ function loadWorkspaceProfile() {
 }
 
 function saveWorkspaceProfile() {
-  localStorage.setItem(WORKSPACE_PROFILE_KEY, JSON.stringify(workspaceProfile));
+  accountStorageSet(WORKSPACE_PROFILE_KEY, JSON.stringify(workspaceProfile));
   applyWorkspaceProfile();
 }
 
 function loadAdvancedData() {
   try {
-    const saved = JSON.parse(localStorage.getItem(ADVANCED_STORAGE_KEY) || "{}");
+    const saved = JSON.parse(accountStorageGet(ADVANCED_STORAGE_KEY) || "{}");
 
     return {
       gameSettings: Array.isArray(saved.gameSettings) ? saved.gameSettings : [],
@@ -2591,7 +2673,7 @@ function loadAdvancedData() {
 }
 
 function saveAdvancedData() {
-  localStorage.setItem(ADVANCED_STORAGE_KEY, JSON.stringify(advancedData));
+  accountStorageSet(ADVANCED_STORAGE_KEY, JSON.stringify(advancedData));
 }
 
 function applyWorkspaceProfile() {
@@ -3552,7 +3634,7 @@ let navDisplaySettings = (() => {
       theme: "dark",
       orientation: "vertical",
       tabSize: 39,
-      ...JSON.parse(localStorage.getItem(NAV_DISPLAY_KEY) || "{}")
+      ...JSON.parse(accountStorageGet(NAV_DISPLAY_KEY) || "{}")
     };
   } catch {
     return { theme: "dark", orientation: "vertical", tabSize: 39 };
@@ -3560,7 +3642,7 @@ let navDisplaySettings = (() => {
 })();
 
 function saveNavDisplaySettings() {
-  localStorage.setItem(NAV_DISPLAY_KEY, JSON.stringify(navDisplaySettings));
+  accountStorageSet(NAV_DISPLAY_KEY, JSON.stringify(navDisplaySettings));
 }
 
 function applyNavDisplaySettings() {
@@ -3721,7 +3803,7 @@ function loadAdvancedInterfaceSettings() {
   try {
     return {
       ...defaultAdvancedInterfaceSettings,
-      ...JSON.parse(localStorage.getItem(ADVANCED_INTERFACE_KEY) || "{}")
+      ...JSON.parse(accountStorageGet(ADVANCED_INTERFACE_KEY) || "{}")
     };
   } catch {
     return { ...defaultAdvancedInterfaceSettings };
@@ -3729,7 +3811,7 @@ function loadAdvancedInterfaceSettings() {
 }
 
 function saveAdvancedInterfaceSettings() {
-  localStorage.setItem(
+  accountStorageSet(
     ADVANCED_INTERFACE_KEY,
     JSON.stringify(advancedInterfaceSettings)
   );
@@ -4133,7 +4215,7 @@ let advancedOrganizerSettings = (() => {
       horizontalPosition: "top",
       folderView: "grid",
       folderSort: "manual",
-      ...JSON.parse(localStorage.getItem(ADVANCED_ORGANIZER_KEY) || "{}")
+      ...JSON.parse(accountStorageGet(ADVANCED_ORGANIZER_KEY) || "{}")
     };
   } catch {
     return {
@@ -4147,7 +4229,7 @@ let advancedOrganizerSettings = (() => {
 let folderSearchQuery = "";
 
 function saveAdvancedOrganizerSettings() {
-  localStorage.setItem(
+  accountStorageSet(
     ADVANCED_ORGANIZER_KEY,
     JSON.stringify(advancedOrganizerSettings)
   );
@@ -5505,6 +5587,9 @@ const tutorialStepLabel = document.getElementById("tutorialStepLabel");
 const tutorialIcon = document.getElementById("tutorialIcon");
 const tutorialTitle = document.getElementById("tutorialTitle");
 const tutorialDescription = document.getElementById("tutorialDescription");
+const tutorialWhy = document.getElementById("tutorialWhy");
+const tutorialTry = document.getElementById("tutorialTry");
+const tutorialRoleNote = document.getElementById("tutorialRoleNote");
 const tutorialProgressBar = document.getElementById("tutorialProgressBar");
 const tutorialCloseButton = document.getElementById("tutorialCloseButton");
 const tutorialSkipButton = document.getElementById("tutorialSkipButton");
@@ -5518,89 +5603,150 @@ let tutorialResizeTimer = null;
 const tutorialSteps = [
   {
     view: "main",
-    selector: ".sidebar-brand",
+    selector: ".welcome-panel",
     icon: "V",
-    title: "Welcome to Varsity Studios",
-    description: "This dashboard keeps your games, development systems, files, tasks, releases, team information, and custom categories organized."
+    title: "Welcome to your Varsity Studios workspace",
+    description: "This is your personal dashboard home. It summarizes what is inside your account and gives you fast access to the areas you use most.",
+    why: "Every account has its own workspace data. Changes made while signed into this account stay attached to this account on this browser.",
+    try: "Look at the welcome card and your account role. Owner accounts have full controls; Member accounts have a limited workspace.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "main",
     selector: ".sidebar-tabs",
-    icon: "01",
-    title: "Main navigation",
-    description: "Use these categories to move between the Dashboard, websites, developer tools, settings, releases, team pages, and your own custom tabs."
+    icon: "NAV",
+    title: "Your navigation controls the whole dashboard",
+    description: "The left navigation moves between built-in Varsity tools and the custom categories you create for games, systems, assets, or planning.",
+    why: "Keeping tools separated into clear categories makes larger Roblox projects easier to manage without losing files or notes.",
+    try: "As the tutorial moves forward, watch this navigation automatically change pages so you can see where each tool lives.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "main",
     selector: ".quick-action-grid",
-    icon: "⌁",
-    title: "Dashboard shortcuts",
-    description: "The main Dashboard gives you quick access to important development areas and shows useful totals for your projects and saved resources."
+    icon: "GO",
+    title: "Quick Access gets you moving faster",
+    description: "These shortcuts jump directly to common areas and recent workspaces without searching through every category.",
+    why: "As your dashboard grows, shortcuts reduce the number of clicks needed to reach the things you use every day.",
+    try: "After the tutorial, use these cards to jump directly to websites or a custom tab.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "developer",
     selector: ".developer-hub",
     icon: "</>",
-    title: "Developer Hub",
-    description: "Track game projects, production tasks, Roblox IDs, and reusable Luau code snippets. Every item can be edited or deleted later."
+    title: "Developer Hub is your production command center",
+    description: "Projects, tasks, Roblox IDs, and Luau snippets live here. Use it to track what is being built and keep technical information organized.",
+    why: "Roblox development often spreads IDs, scripts, tasks, and project notes across different apps. This page keeps the important pieces together.",
+    try: "Create a project, add a task, save a useful Roblox ID, or store a code snippet you reuse often.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "systems",
     selector: ".advanced-manager-page",
     icon: "SYS",
-    title: "Game Systems",
-    description: "Document game settings, RemoteEvents, RemoteFunctions, Bindables, and DataStores so important technical information is never lost."
+    title: "Game Systems documents the technical side",
+    description: "Track settings, remotes, DataStores, and other systems used by your Roblox experiences.",
+    why: "When a project becomes large, knowing which remotes and DataStores exist prevents duplicate systems and naming confusion.",
+    try: "Use this area as a living technical reference for your game instead of relying on memory.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "releases",
     selector: ".advanced-manager-page",
     icon: "VER",
-    title: "Release Manager",
-    description: "Plan versions, target dates, testing stages, release status, update notes, fixes, and upcoming features."
+    title: "Release Manager keeps updates organized",
+    description: "Plan versions, target dates, testing stages, release statuses, notes, fixes, and upcoming features.",
+    why: "A release tracker makes it clear what is ready, what still needs testing, and what belongs in the next update.",
+    try: "Create a release for your next game update and add the features or fixes that belong to it.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "team",
     selector: ".advanced-manager-page",
-    icon: "USR",
-    title: "Team Directory",
-    description: "Save Roblox usernames, roles, access levels, and responsibilities for owners, developers, builders, designers, animators, and testers."
+    icon: "TEAM",
+    title: "Team Directory tracks who does what",
+    description: "Save Roblox usernames, roles, responsibilities, and access information for the people working with Varsity Studios.",
+    why: "A clear team directory helps prevent confusion when multiple people are building, scripting, testing, designing, or animating.",
+    try: "Add a team member and describe exactly what they are responsible for.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "websites",
     selector: ".website-card-grid, .global-websites",
-    icon: "◎",
-    title: "Global Websites",
-    description: "Keep useful external websites together so you can quickly open Roblox Dashboard, MiaPrep, YouTube, and other important resources."
-  },
-  {
-    view: "settings",
-    selector: ".settings-page",
-    icon: "⚙",
-    title: "Settings and customization",
-    description: "Change colorways, light or dark mode, tab direction, top or bottom horizontal navigation, animation speed, sizes, spacing, text, and other advanced appearance controls."
+    icon: "WEB",
+    title: "Global Websites stores your important links",
+    description: "Keep frequently used websites in one place so the dashboard also acts as your development launchpad.",
+    why: "You do not need to remember or repeatedly search for the same dashboards, playlists, documents, or tools.",
+    try: "Open a saved link or add useful resources to folders using Quick Links.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "first-custom-tab",
     selector: ".advanced-tab-page, #tabContent",
     icon: "TAB",
-    title: "Custom tabs and folders",
-    description: "Create categories for each game or development area. Inside them, folders can store models, images, animations, notes, checklists, links, custom fields, priorities, progress, and activity history."
+    title: "Custom tabs are your main organization layer",
+    description: "Create categories for individual games, departments, development areas, assets, or anything else you want separated.",
+    why: "Tabs stop one giant dashboard from becoming cluttered. Each tab becomes its own workspace with folders underneath it.",
+    try: "Create tabs such as FOOTBALL, UI DESIGN, GAME SYSTEMS, ANIMATIONS, or a specific game name.",
+    roles: ["Owner", "Member"]
   },
   {
     view: "first-custom-tab",
     selector: "#addFolderButton",
-    icon: "+",
-    title: "Create your first folder",
-    description: "Use Add folder to start organizing a category. Special folder names such as Models, Animations, and Images / Icons unlock file-specific tools."
+    icon: "DIR",
+    title: "Folders hold the actual work",
+    description: "Folders can contain notes, checklists, links, custom fields, priorities, progress, models, images, animation IDs, and activity history.",
+    why: "This is where the list layout becomes powerful: you can scan many organized folders without oversized cards filling the screen.",
+    try: "Create a folder, open it, set its status and priority, then add a checklist or useful link.",
+    roles: ["Owner", "Member"]
+  },
+  {
+    view: "settings",
+    selector: ".ui-style-version-panel, .settings-page",
+    icon: "UI",
+    title: "Owner Settings controls the entire experience",
+    description: "Owners can change the dashboard colorway, UI version, motion system, navigation position, layout density, and advanced visual options.",
+    why: "These settings affect how your own account feels without forcing every user to use the same layout.",
+    try: "Try Glass, Basic, Studio 3D, Neon, or Slate. You can also move horizontal tabs to the top or bottom.",
+    roles: ["Owner"]
+  },
+  {
+    view: "settings",
+    selector: ".pro-motion-settings-panel, .settings-page",
+    icon: "FX",
+    title: "Pro Motion Studio controls the animation system",
+    description: "Choose full motion presets or individually control page transitions, card effects, navigation animation, modal entrances, parallax, and pointer effects.",
+    why: "Instead of a single animation speed toggle, you can make the dashboard feel cinematic, energetic, futuristic, or minimal.",
+    try: "Start with a preset, then customize individual effects until the dashboard feels right.",
+    roles: ["Owner"]
+  },
+  {
+    view: "settings",
+    selector: ".account-management-panel, .settings-page",
+    icon: "ACC",
+    title: "Owner and Member access are separated",
+    description: "The Owner receives full access. Members receive their own workspace but cannot open owner-only dashboard settings.",
+    why: "Roles prevent every person who can sign in from changing global owner controls.",
+    try: "The account panel shows which users are Owners and Members.",
+    roles: ["Owner"]
   },
   {
     view: "main",
-    selector: ".sidebar-footer",
+    selector: "#dashboardTutorialButton",
     icon: "✓",
-    title: "You are ready",
-    description: "Your dashboard saves information in this browser. Use the Tutorial button at any time to restart this guide."
+    title: "Tutorial complete",
+    description: "You now know where the major Varsity Studios tools live and how the dashboard is organized.",
+    why: "You can restart this walkthrough at any time instead of trying to remember every feature.",
+    try: "Start building your workspace. The best first step is creating a custom tab and a few well-named folders.",
+    roles: ["Owner", "Member"]
   }
 ];
+
+function getAvailableTutorialSteps() {
+  const role = getSignedInUser().role;
+  return tutorialSteps.filter(step => !step.roles || step.roles.includes(role));
+}
 
 function getTutorialTargetView(step) {
   if (step.view === "first-custom-tab") {
@@ -5628,12 +5774,14 @@ function closeDashboardTutorial(markComplete = false) {
   clearTutorialHighlight();
 
   if (markComplete) {
-    localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+    accountStorageSet(TUTORIAL_STORAGE_KEY, "true");
   }
 }
 
 function showTutorialStep() {
-  const step = tutorialSteps[tutorialStepIndex];
+  const availableSteps = getAvailableTutorialSteps();
+  const step = availableSteps[tutorialStepIndex];
+
   if (!step) {
     closeDashboardTutorial(true);
     return;
@@ -5646,21 +5794,28 @@ function showTutorialStep() {
   }
 
   tutorialStepLabel.textContent =
-    `STEP ${tutorialStepIndex + 1} OF ${tutorialSteps.length}`;
+    `STEP ${tutorialStepIndex + 1} OF ${availableSteps.length}`;
   tutorialIcon.textContent = step.icon;
   tutorialTitle.textContent = step.title;
   tutorialDescription.textContent = step.description;
+  tutorialWhy.textContent = step.why || "";
+  tutorialTry.textContent = step.try || "";
+  tutorialRoleNote.textContent =
+    getSignedInUser().role === "Owner"
+      ? "OWNER WALKTHROUGH • FULL ACCESS"
+      : "MEMBER WALKTHROUGH • MEMBER ACCESS";
+
   tutorialProgressBar.style.width =
-    `${((tutorialStepIndex + 1) / tutorialSteps.length) * 100}%`;
+    `${((tutorialStepIndex + 1) / availableSteps.length) * 100}%`;
 
   tutorialBackButton.disabled = tutorialStepIndex === 0;
   tutorialContinueButton.textContent =
-    tutorialStepIndex === tutorialSteps.length - 1
-      ? "Finish"
+    tutorialStepIndex === availableSteps.length - 1
+      ? "Finish tutorial"
       : "Continue";
 
   requestAnimationFrame(() => {
-    setTimeout(() => positionTutorialForStep(step), 80);
+    setTimeout(() => positionTutorialForStep(step), 100);
   });
 }
 
@@ -5765,7 +5920,7 @@ renderNavigation = function renderNavigationWithTutorial() {
   addTutorialButton();
 
   if (tutorialActive) {
-    const step = tutorialSteps[tutorialStepIndex];
+    const step = getAvailableTutorialSteps()[tutorialStepIndex];
     requestAnimationFrame(() => {
       setTimeout(() => positionTutorialForStep(step), 100);
     });
@@ -5773,7 +5928,8 @@ renderNavigation = function renderNavigationWithTutorial() {
 };
 
 tutorialContinueButton.addEventListener("click", () => {
-  if (tutorialStepIndex >= tutorialSteps.length - 1) {
+  const availableSteps = getAvailableTutorialSteps();
+  if (tutorialStepIndex >= availableSteps.length - 1) {
     closeDashboardTutorial(true);
     return;
   }
@@ -5802,7 +5958,7 @@ window.addEventListener("resize", () => {
 
   clearTimeout(tutorialResizeTimer);
   tutorialResizeTimer = setTimeout(() => {
-    positionTutorialForStep(tutorialSteps[tutorialStepIndex]);
+    positionTutorialForStep(getAvailableTutorialSteps()[tutorialStepIndex]);
   }, 100);
 });
 
@@ -5828,7 +5984,7 @@ addTutorialButton();
 
 setTimeout(() => {
   const hasCompletedTutorial =
-    localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true";
+    accountStorageGet(TUTORIAL_STORAGE_KEY) === "true";
 
   if (!hasCompletedTutorial && !loginView.classList.contains("hidden")) {
     return;
@@ -5874,7 +6030,7 @@ function loadProMotionSettings() {
   try {
     return {
       ...defaultProMotionSettings,
-      ...JSON.parse(localStorage.getItem(PRO_MOTION_KEY) || "{}")
+      ...JSON.parse(accountStorageGet(PRO_MOTION_KEY) || "{}")
     };
   } catch {
     return { ...defaultProMotionSettings };
@@ -5882,7 +6038,7 @@ function loadProMotionSettings() {
 }
 
 function saveProMotionSettings() {
-  localStorage.setItem(PRO_MOTION_KEY, JSON.stringify(proMotionSettings));
+  accountStorageSet(PRO_MOTION_KEY, JSON.stringify(proMotionSettings));
 }
 
 function applyProMotionPreset(name) {
@@ -6486,7 +6642,7 @@ function loadUiStyleVersionSettings() {
   try {
     return {
       ...defaultUiStyleVersionSettings,
-      ...JSON.parse(localStorage.getItem(UI_STYLE_VERSION_KEY) || "{}")
+      ...JSON.parse(accountStorageGet(UI_STYLE_VERSION_KEY) || "{}")
     };
   } catch {
     return { ...defaultUiStyleVersionSettings };
@@ -6494,7 +6650,7 @@ function loadUiStyleVersionSettings() {
 }
 
 function saveUiStyleVersionSettings() {
-  localStorage.setItem(
+  accountStorageSet(
     UI_STYLE_VERSION_KEY,
     JSON.stringify(uiStyleVersionSettings)
   );
@@ -6663,3 +6819,254 @@ function bindUiStyleVersionPanel() {
 }
 
 applyUiStyleVersionSettings();
+
+
+/* Account roles, per-account workspace data, and mobile dashboard */
+const ACCOUNT_RESET_MARKER = "varsityAccountUpgradeResetV2";
+
+(function wipeLegacyDashboardDataOnce() {
+  if (window.localStorage.getItem(ACCOUNT_RESET_MARKER) === "done") return;
+
+  const keysToDelete = [];
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (
+      key &&
+      key.startsWith("varsity") &&
+      !key.startsWith(`varsity:${ACCOUNT_SCHEMA_VERSION}:`) &&
+      key !== ACCOUNT_RESET_MARKER
+    ) {
+      keysToDelete.push(key);
+    }
+  }
+
+  keysToDelete.forEach(key => window.localStorage.removeItem(key));
+  window.localStorage.setItem(ACCOUNT_RESET_MARKER, "done");
+})();
+
+function safeAccountJson(key, fallback) {
+  try {
+    const value = JSON.parse(accountStorageGet(key) || "null");
+    return value ?? structuredClone(fallback);
+  } catch {
+    return structuredClone(fallback);
+  }
+}
+
+function reloadSignedInAccountState() {
+  tabs = loadTabs();
+  activeView = accountStorageGet(STORAGE_KEYS.activeView) || "main";
+
+  dashboardSettings = loadDashboardSettings();
+  developerData = loadDeveloperData();
+  workspaceProfile = loadWorkspaceProfile();
+  advancedData = loadAdvancedData();
+  advancedInterfaceSettings = loadAdvancedInterfaceSettings();
+  proMotionSettings = loadProMotionSettings();
+  uiStyleVersionSettings = loadUiStyleVersionSettings();
+
+  navDisplaySettings = {
+    theme: "dark",
+    orientation: "vertical",
+    tabSize: 39,
+    ...safeAccountJson(NAV_DISPLAY_KEY, {})
+  };
+
+  advancedOrganizerSettings = {
+    horizontalPosition: "top",
+    folderView: "list",
+    folderSort: "manual",
+    ...safeAccountJson(ADVANCED_ORGANIZER_KEY, {})
+  };
+
+  // New accounts always begin with the default Varsity red colorway.
+  if (!accountStorageGet(SETTINGS_STORAGE_KEY)) {
+    dashboardSettings = {
+      ...defaultSettings,
+      colorway: "varsity"
+    };
+    saveDashboardSettings();
+  }
+
+  if (!accountStorageGet(UI_STYLE_VERSION_KEY)) {
+    uiStyleVersionSettings = {
+      ...defaultUiStyleVersionSettings,
+      style: "default",
+      showSideLogos: true
+    };
+    saveUiStyleVersionSettings();
+  }
+
+  applyDashboardSettings();
+  applyNavDisplaySettings();
+  applyAdvancedInterfaceSettings();
+  applyAdvancedOrganizerSettings();
+  applyProMotionSettings();
+  applyUiStyleVersionSettings();
+}
+
+function updateSignedInIdentity() {
+  const user = getSignedInUser();
+
+  document.querySelectorAll(".signed-in").forEach(block => {
+    const strong = block.querySelector("strong");
+    const small = block.querySelector("small");
+    if (strong) strong.textContent = user.displayName;
+    if (small) small.textContent = user.roleLabel;
+  });
+
+  const kicker = document.querySelector("[data-user-role-kicker]");
+  const welcome = document.querySelector("[data-user-welcome]");
+
+  if (kicker) {
+    kicker.textContent = `VARSITY STUDIOS ${user.role.toUpperCase()}`;
+  }
+
+  if (welcome) {
+    welcome.textContent = `Welcome back, ${user.displayName}.`;
+  }
+
+  document.body.dataset.accountRole = user.role.toLowerCase();
+  document.body.dataset.accountUser = user.username;
+}
+
+const roleBaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationWithRoles() {
+  if (currentUser?.role === "Member" && activeView === "settings") {
+    activeView = "main";
+  }
+
+  roleBaseRenderNavigation();
+  updateSignedInIdentity();
+  applyRolePermissions();
+  setupMobileDashboardControls();
+};
+
+function applyRolePermissions() {
+  if (!currentUser) return;
+
+  const isOwner = hasOwnerAccess();
+
+  Array.from(sidebarTabs.querySelectorAll(".tab-button")).forEach(button => {
+    const name = button.querySelector(".tab-name")?.textContent?.trim();
+    if (!isOwner && name === "Settings") {
+      button.remove();
+    }
+  });
+
+  if (!isOwner) {
+    deleteTabButton.classList.add("hidden");
+  }
+
+  document.querySelectorAll("[data-owner-only]").forEach(element => {
+    element.classList.toggle("hidden", !isOwner);
+  });
+}
+
+const accountBaseRenderMainDashboard = renderMainDashboard;
+renderMainDashboard = function renderMainDashboardByAccount() {
+  accountBaseRenderMainDashboard();
+  updateSignedInIdentity();
+
+  const user = getSignedInUser();
+  const welcomePanel = tabContent.querySelector(".welcome-panel");
+
+  if (welcomePanel) {
+    const paragraph = welcomePanel.querySelector("p");
+    if (paragraph) {
+      paragraph.textContent = user.role === "Owner"
+        ? "Full owner access is active. Manage projects, settings, folders, assets, releases, team information, and your personal workspace."
+        : "Your member workspace is active. Your tabs, folders, files, projects, and dashboard data stay separate from other accounts on this browser.";
+    }
+  }
+};
+
+const accountBaseRenderSettingsPage = renderSettingsPage;
+renderSettingsPage = function renderSettingsPageWithAccountPanel() {
+  if (!hasOwnerAccess()) {
+    activeView = "main";
+    renderNavigation();
+    return;
+  }
+
+  accountBaseRenderSettingsPage();
+
+  const settingsPage = tabContent.querySelector(".settings-page");
+  if (!settingsPage) return;
+
+  const panel = document.createElement("section");
+  panel.className = "settings-panel account-management-panel";
+  panel.dataset.ownerOnly = "true";
+  panel.innerHTML = `
+    <div class="settings-heading">
+      <div>
+        <span class="dashboard-kicker">ACCOUNT ACCESS</span>
+        <h3>Varsity Studios accounts</h3>
+        <p>Owner accounts have full dashboard control. Member accounts receive their own workspace and cannot open owner-only settings.</p>
+      </div>
+    </div>
+
+    <div class="account-access-list">
+      ${Object.values(DASHBOARD_ACCOUNTS).map(account => `
+        <article class="account-access-row">
+          <div class="account-avatar">${escapeHtml(account.username.slice(0, 1).toUpperCase())}</div>
+          <div class="account-access-copy">
+            <strong>${escapeHtml(account.username)}</strong>
+            <small>${escapeHtml(account.roleLabel)}</small>
+          </div>
+          <span class="account-role-badge ${account.role.toLowerCase()}">${escapeHtml(account.role)}</span>
+        </article>
+      `).join("")}
+    </div>
+
+    <div class="account-security-note">
+      <strong>Static-site security notice</strong>
+      <p>This GitHub Pages build uses browser-side account checks. It separates dashboard data per account on a device, but true secure cross-device accounts require the cloud database/authentication upgrade.</p>
+    </div>
+  `;
+
+  settingsPage.insertBefore(panel, settingsPage.firstElementChild);
+};
+
+function setupMobileDashboardControls() {
+  const menuButton = document.getElementById("mobileMenuButton");
+  const backdrop = document.getElementById("mobileSidebarBackdrop");
+  const sidebar = document.querySelector(".sidebar");
+
+  if (!menuButton || !backdrop || !sidebar) return;
+  if (menuButton.dataset.mobileBound === "true") return;
+
+  menuButton.dataset.mobileBound = "true";
+
+  const close = () => {
+    document.body.classList.remove("mobile-sidebar-open");
+    backdrop.classList.add("hidden");
+    menuButton.setAttribute("aria-label", "Open dashboard menu");
+  };
+
+  const open = () => {
+    document.body.classList.add("mobile-sidebar-open");
+    backdrop.classList.remove("hidden");
+    menuButton.setAttribute("aria-label", "Close dashboard menu");
+  };
+
+  menuButton.addEventListener("click", () => {
+    if (document.body.classList.contains("mobile-sidebar-open")) {
+      close();
+    } else {
+      open();
+    }
+  });
+
+  backdrop.addEventListener("click", close);
+
+  sidebar.addEventListener("click", event => {
+    if (event.target.closest(".tab-button")) {
+      close();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 860) close();
+  });
+}

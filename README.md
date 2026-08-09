@@ -1,10 +1,14 @@
 # Varsity Studios Dashboard
 
-## Login
-- Username: `ykdrxc`
-- Password: `JamalJackson21`
+## Accounts
 
-A fresh login is required whenever the page opens or refreshes.
+This build includes two dashboard roles:
+- Owner account: `ykdrxc`
+- Member account: `rundownbjay`
+
+Passwords are intentionally not listed in this public README.
+
+The static GitHub Pages build stores account data separately in browser storage. Secure cross-device account synchronization requires connecting the dashboard to a real authentication service and cloud database.
 
 ## Main dashboard
 The fixed Dashboard page now shows:
@@ -264,3 +268,20 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Side V logo toggle
 - Side V logo depth: Soft, Medium, or Strong
 - Side V logo opacity slider
+
+
+## Account roles, tutorial, and mobile upgrade
+- Owner and Member sign-in roles
+- Per-account browser-storage namespace
+- Previous dashboard local data is reset once during this upgrade
+- New accounts begin with default Varsity red styling
+- Owner-only Settings access
+- Dynamic signed-in username and role
+- Expanded guided tutorial with Why It Matters and What To Do Here sections
+- Role-aware tutorial steps
+- Automatic first-time tutorial per account
+- Rebuilt password Show / Hide control sizing
+- Mobile slide-out navigation
+- Mobile overlay/backdrop
+- Responsive dashboard cards, folder lists, dialogs, settings, and tutorial
+- Better phone-safe spacing and native input sizing

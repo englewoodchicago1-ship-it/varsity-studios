@@ -102,8 +102,12 @@
       </div>
     </aside>
 
+    <div id="mobileSidebarBackdrop" class="mobile-sidebar-backdrop hidden"></div>
     <section class="dashboard-main">
       <header class="topbar">
+        <button id="mobileMenuButton" class="mobile-menu-button" type="button" aria-label="Open dashboard menu">
+          <span></span><span></span><span></span>
+        </button>
         <div>
           <p class="eyebrow">VARSITY STUDIOS</p>
           <h1 id="pageTitle">Dashboard</h1>
@@ -330,6 +334,20 @@
       <div class="tutorial-copy">
         <h2 id="tutorialTitle">Welcome</h2>
         <p id="tutorialDescription">This tutorial will guide you through the dashboard.</p>
+
+        <div class="tutorial-detail-grid">
+          <div class="tutorial-detail-block">
+            <span>WHY IT MATTERS</span>
+            <p id="tutorialWhy">Learn how this area helps organize your Varsity Studios workspace.</p>
+          </div>
+
+          <div class="tutorial-detail-block tutorial-try-block">
+            <span>WHAT TO DO HERE</span>
+            <p id="tutorialTry">Use Continue to move through the walkthrough.</p>
+          </div>
+        </div>
+
+        <div id="tutorialRoleNote" class="tutorial-role-note"></div>
       </div>
 
       <div class="tutorial-progress-track">
