@@ -373,3 +373,9 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 ## Your Profile visibility fix
 - Ensures the Your Profile section is always injected into Settings after all other settings render wrappers.
 - Keeps Upload profile picture / Change profile picture available for Owner, Member, and User accounts.
+
+
+## Profile section root-cause fix
+- Removed a stale Settings panel that still referenced the old hardcoded `DASHBOARD_ACCOUNTS` object after Supabase migration.
+- That stale reference could throw an error for the Owner and stop Settings before the Your Profile section rendered.
+- Your Profile now renders defensively even if another Settings extension fails.

@@ -7147,44 +7147,8 @@ renderSettingsPage = function renderSettingsPageWithAccountPanel() {
   const settingsPage = tabContent.querySelector(".settings-page");
   if (!settingsPage) return;
 
-  // Account management is Owner-only, but all users can edit
-  // their own dashboard appearance/settings.
-  if (!hasOwnerAccess()) {
-    return;
-  }
-
-  const panel = document.createElement("section");
-  panel.className = "settings-panel account-management-panel";
-  panel.dataset.ownerOnly = "true";
-  panel.innerHTML = `
-    <div class="settings-heading">
-      <div>
-        <span class="dashboard-kicker">ACCOUNT ACCESS</span>
-        <h3>Varsity Studios accounts</h3>
-        <p>Everyone can manage their own workspace and personal settings. Owner access additionally includes account-management controls.</p>
-      </div>
-    </div>
-
-    <div class="account-access-list">
-      ${Object.values(DASHBOARD_ACCOUNTS).map(account => `
-        <article class="account-access-row">
-          <div class="account-avatar">${escapeHtml(account.username.slice(0, 1).toUpperCase())}</div>
-          <div class="account-access-copy">
-            <strong>${escapeHtml(account.username)}</strong>
-            <small>${escapeHtml(account.roleLabel)}</small>
-          </div>
-          <span class="account-role-badge ${account.role.toLowerCase()}">${escapeHtml(account.role)}</span>
-        </article>
-      `).join("")}
-    </div>
-
-    <div class="account-security-note">
-      <strong>Static-site security notice</strong>
-      <p>This GitHub Pages build uses browser-side account checks. It separates dashboard data per account on a device, but true secure cross-device accounts require the cloud database/authentication upgrade.</p>
-    </div>
-  `;
-
-  settingsPage.insertBefore(panel, settingsPage.firstElementChild);
+  // Supabase now owns account authentication.
+  // Do not render or reference a hardcoded account list in frontend code.
 };
 
 function setupMobileDashboardControls() {
@@ -7763,12 +7727,32 @@ renderSettingsPage = function renderSettingsPageWithProfilePicture() {
 /* Final profile settings visibility wrapper */
 const finalProfileSettingsBase = renderSettingsPage;
 renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
-  finalProfileSettingsBase();
+  try {
+    finalProfileSettingsBase();
+  } catch (error) {
+    console.error("[SETTINGS] Base settings render error:", error);
+  }
 
   const settingsPage = tabContent.querySelector(".settings-page");
-  if (!settingsPage) return;
+  if (!settingsPage) {
+    tabContent.innerHTML = `
+      <div class="settings-page">
+        <section class="settings-panel">
+          <div class="settings-heading">
+            <div>
+              <span class="dashboard-kicker">SETTINGS</span>
+              <h3>Account settings</h3>
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+  }
 
-  let panel = settingsPage.querySelector(".profile-picture-settings-panel");
+  const resolvedSettingsPage = tabContent.querySelector(".settings-page");
+  if (!resolvedSettingsPage) return;
+
+  let panel = resolvedSettingsPage.querySelector(".profile-picture-settings-panel");
 
   if (!panel) {
     panel = document.createElement("section");
@@ -7810,7 +7794,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
       </div>
     `;
 
-    settingsPage.insertBefore(panel, settingsPage.firstElementChild);
+    resolvedSettingsPage.insertBefore(panel, resolvedSettingsPage.firstElementChild);
   }
 
   panel.querySelector("#changeProfilePictureButton")?.addEventListener("click", openProfilePicturePicker);
