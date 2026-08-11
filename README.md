@@ -313,3 +313,13 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Member dashboard headings no longer inherit the owner's display name.
 - Website / studio description is editable from Owner Settings → Workspace Identity.
 - The editable studio description also updates the site's HTML meta description.
+
+
+## Supabase cloud authentication update
+- Authentication now uses Supabase Auth.
+- Plain-text passwords and password hashes are no longer stored in `script.js`.
+- Dashboard settings/tabs/folders and other browser-backed dashboard state are mirrored to `dashboard_data`.
+- Cloud data is tied to each authenticated Supabase user ID and protected by the RLS policies configured in Supabase.
+- The publishable key in frontend code is expected; never place a secret/service-role key in this repository.
+- Login sessions intentionally do not persist through a full page refresh, preserving the dashboard's re-login-on-refresh behavior.
+- Current username-to-auth-email routing still exists in frontend code. Hiding account identifiers as well requires moving username resolution to a server-side Supabase Edge Function.

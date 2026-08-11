@@ -7896,3 +7896,12 @@ body[data-theme-mode="light"] .topbar-account {
     max-width: 64px;
   }
 }
+
+
+.login-cloud-note {
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 0.62rem;
+  line-height: 1.45;
+  text-align: center;
+}

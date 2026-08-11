@@ -1,27 +1,40 @@
-const ACCOUNT_SCHEMA_VERSION = "v2";
+const ACCOUNT_SCHEMA_VERSION = "v3-cloud";
 
-const DASHBOARD_ACCOUNTS = {
-  ykdrxc: {
-    username: "ykdrxc",
-    displayName: "Drxco",
-    role: "Owner",
-    roleLabel: "Owner of Varsity Studios",
-    passwordHash: "61b88d06fad14abc9f2f2b42e571d9231e8492ff52d9406a8c4cc3d2cf411f81"
-  },
-  rundownbjay: {
-    username: "rundownbjay",
-    displayName: "Bj",
-    role: "Member",
-    roleLabel: "Member of Varsity Studios",
-    passwordHash: "90d6fbbff3b79a8806f0db3478e757078fe263aabda49c23626db34d3e9f13db"
+const SUPABASE_URL = "https://waeodyacihqsmbaqgykj.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cNISh2lHc0ChNjYdPDgRog_4w79Tds0";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: true,
+      detectSessionInUrl: false
+    }
   }
+);
+
+/*
+  Temporary username -> internal Auth email routing.
+  Passwords are NOT stored in this website anymore.
+  Later this mapping can move into an Edge Function if you also want
+  account identifiers hidden from the frontend source.
+*/
+const LOGIN_EMAILS = {
+  ykdrxc: "drxco@varsitystudios.net",
+  rundownbjay: "bj@varsitystudios.net",
+  neco: "neco@varsitystudios.net"
 };
 
 let currentUser = null;
+let cloudSaveTimer = null;
+let cloudSaveInProgress = false;
+let cloudHydrating = false;
 
 function accountStorageKey(key) {
   if (!currentUser) return null;
-  return `varsity:${ACCOUNT_SCHEMA_VERSION}:${currentUser.username}:${key}`;
+  return `varsity:${ACCOUNT_SCHEMA_VERSION}:${currentUser.id}:${key}`;
 }
 
 function accountStorageGet(key) {
@@ -34,131 +47,124 @@ function accountStorageSet(key, value) {
   const resolved = accountStorageKey(key);
   if (!resolved) return;
   window.localStorage.setItem(resolved, value);
+  if (!cloudHydrating) scheduleCloudSave();
 }
 
 function accountStorageRemove(key) {
   const resolved = accountStorageKey(key);
   if (!resolved) return;
   window.localStorage.removeItem(resolved);
+  if (!cloudHydrating) scheduleCloudSave();
 }
 
-async function sha256Text(value) {
-  // Use Web Crypto when available, but do not make login depend on HTTPS/WebCrypto.
-  if (window.crypto?.subtle && window.TextEncoder) {
-    try {
-      const bytes = new TextEncoder().encode(value);
-      const digest = await window.crypto.subtle.digest("SHA-256", bytes);
-      return Array.from(new Uint8Array(digest))
-        .map(byte => byte.toString(16).padStart(2, "0"))
-        .join("");
-    } catch (error) {
-      console.warn("[LOGIN] Web Crypto unavailable, using compatibility hash.", error);
-    }
+function collectAccountSnapshot() {
+  if (!currentUser) return {};
+
+  const prefix = `varsity:${ACCOUNT_SCHEMA_VERSION}:${currentUser.id}:`;
+  const snapshot = {};
+
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (!key || !key.startsWith(prefix)) continue;
+    snapshot[key.slice(prefix.length)] = window.localStorage.getItem(key);
   }
 
-  return sha256Compatibility(value);
+  return snapshot;
 }
 
-function sha256Compatibility(input) {
-  const rightRotate = (value, amount) =>
-    (value >>> amount) | (value << (32 - amount));
+async function saveCloudSnapshot() {
+  if (!currentUser || cloudHydrating || cloudSaveInProgress) return;
 
-  const maxWord = Math.pow(2, 32);
-  let result = "";
+  cloudSaveInProgress = true;
+  try {
+    const snapshot = collectAccountSnapshot();
 
-  const words = [];
-  const asciiBitLength = input.length * 8;
+    const { error } = await supabaseClient
+      .from("dashboard_data")
+      .upsert(
+        {
+          user_id: currentUser.id,
+          data: snapshot,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: "user_id" }
+      );
 
-  const hash = [];
-  const k = [];
-  let primeCounter = 0;
+    if (error) throw error;
+  } catch (error) {
+    console.error("[CLOUD] Save failed:", error);
+  } finally {
+    cloudSaveInProgress = false;
+  }
+}
 
-  const isComposite = {};
+function scheduleCloudSave() {
+  if (!currentUser || cloudHydrating) return;
+  window.clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = window.setTimeout(saveCloudSnapshot, 450);
+}
 
-  for (let candidate = 2; primeCounter < 64; candidate += 1) {
-    if (!isComposite[candidate]) {
-      for (let multiple = candidate * candidate; multiple < 313; multiple += candidate) {
-        isComposite[multiple] = true;
-      }
+async function loadCloudSnapshot() {
+  if (!currentUser) return;
 
-      if (primeCounter < 8) {
-        hash[primeCounter] =
-          (Math.pow(candidate, 0.5) * maxWord) | 0;
-      }
+  cloudHydrating = true;
 
-      k[primeCounter] =
-        (Math.pow(candidate, 1 / 3) * maxWord) | 0;
+  try {
+    const { data, error } = await supabaseClient
+      .from("dashboard_data")
+      .select("data")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
 
-      primeCounter += 1;
+    if (error) throw error;
+
+    const prefix = `varsity:${ACCOUNT_SCHEMA_VERSION}:${currentUser.id}:`;
+
+    const existingKeys = [];
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index);
+      if (key?.startsWith(prefix)) existingKeys.push(key);
     }
-  }
+    existingKeys.forEach(key => window.localStorage.removeItem(key));
 
-  input = unescape(encodeURIComponent(input));
-  input += "\\x80";
-
-  while ((input.length % 64) !== 56) {
-    input += "\\x00";
-  }
-
-  for (let index = 0; index < input.length; index += 1) {
-    const code = input.charCodeAt(index);
-
-    words[index >> 2] |= code << ((3 - index) % 4) * 8;
-  }
-
-  words[words.length] = Math.floor(asciiBitLength / maxWord);
-  words[words.length] = asciiBitLength;
-
-  for (let block = 0; block < words.length; block += 16) {
-    const w = words.slice(block, block + 16);
-    const oldHash = hash.slice(0);
-
-    for (let round = 0; round < 64; round += 1) {
-      const w15 = w[round - 15];
-      const w2 = w[round - 2];
-
-      const a = hash[0];
-      const e = hash[4];
-
-      const temp1 =
-        hash[7] +
-        (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) +
-        ((e & hash[5]) ^ (~e & hash[6])) +
-        k[round] +
-        (
-          w[round] =
-            round < 16
-              ? w[round]
-              : (
-                  w[round - 16] +
-                  (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) +
-                  w[round - 7] +
-                  (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
-                ) | 0
-        );
-
-      const temp2 =
-        (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) +
-        ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
-
-      hash.pop();
-      hash.unshift((temp1 + temp2) | 0);
-      hash[4] = (hash[4] + temp1) | 0;
+    if (data?.data && typeof data.data === "object") {
+      Object.entries(data.data).forEach(([key, value]) => {
+        if (typeof value === "string") {
+          window.localStorage.setItem(prefix + key, value);
+        }
+      });
     }
-
-    for (let index = 0; index < 8; index += 1) {
-      hash[index] = (hash[index] + oldHash[index]) | 0;
-    }
+  } finally {
+    cloudHydrating = false;
   }
+}
 
-  for (let index = 0; index < 8; index += 1) {
-    for (let byte = 3; byte + 1; byte -= 1) {
-      const b = (hash[index] >> (byte * 8)) & 255;
-      result += (b < 16 ? "0" : "") + b.toString(16);
-    }
-  }
+async function loadAuthenticatedProfile(authUser) {
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("id, username, display_name, role")
+    .eq("id", authUser.id)
+    .single();
 
-  return result;
+  if (error) throw error;
+
+  const normalizedRole =
+    data.role === "owner" ? "Owner" :
+    data.role === "member" ? "Member" :
+    "User";
+
+  return {
+    id: authUser.id,
+    username: data.username,
+    displayName: data.display_name,
+    role: normalizedRole,
+    roleLabel:
+      normalizedRole === "Owner"
+        ? "Owner of Varsity Studios"
+        : normalizedRole === "Member"
+          ? "Member of Varsity Studios"
+          : "Varsity Studios User"
+  };
 }
 
 function hasOwnerAccess() {
@@ -1064,47 +1070,58 @@ loginForm.addEventListener("submit", async event => {
   loginError.textContent = "";
 
   const username = usernameInput.value.trim().toLowerCase();
-  const account = DASHBOARD_ACCOUNTS[username];
+  const internalEmail = LOGIN_EMAILS[username];
 
-  let submittedHash = "";
-  try {
-    submittedHash = await sha256Text(passwordInput.value);
-  } catch (error) {
-    console.error("[LOGIN] Password verification failed:", error);
-    loginError.textContent = "Login system failed to initialize. Refresh the page and try again.";
-    return;
-  }
-
-  if (!account || submittedHash !== account.passwordHash) {
+  if (!internalEmail) {
     loginError.textContent = "Incorrect username or password.";
-    loginForm.classList.remove("login-shake");
-    void loginForm.offsetWidth;
-    loginForm.classList.add("login-shake");
     passwordInput.value = "";
     passwordInput.focus();
     return;
   }
 
   try {
-    currentUser = account;
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: internalEmail,
+      password: passwordInput.value
+    });
+
+    if (error || !data.user) {
+      loginError.textContent = "Incorrect username or password.";
+      passwordInput.value = "";
+      passwordInput.focus();
+      return;
+    }
+
+    currentUser = await loadAuthenticatedProfile(data.user);
+
+    if (currentUser.username.toLowerCase() !== username) {
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      loginError.textContent = "Incorrect username or password.";
+      return;
+    }
+
+    await loadCloudSnapshot();
     reloadSignedInAccountState();
+
     loginError.textContent = "";
     setLoggedIn(true);
     updateSignedInIdentity();
     setupMobileDashboardControls();
-  } catch (error) {
-    console.error("[LOGIN] Failed to initialize account workspace:", error);
-    currentUser = null;
-    loginError.textContent = "Login succeeded, but the dashboard failed to load. Refresh and try again.";
-    return;
-  }
 
-  if (accountStorageGet(TUTORIAL_STORAGE_KEY) !== "true") {
-    setTimeout(() => {
-      if (!dashboardView.classList.contains("hidden")) {
-        startDashboardTutorial();
-      }
-    }, 850);
+    if (!accountStorageGet(TUTORIAL_STORAGE_KEY)) {
+      setTimeout(() => {
+        if (!dashboardView.classList.contains("hidden")) {
+          startDashboardTutorial();
+        }
+      }, 850);
+    }
+
+    scheduleCloudSave();
+  } catch (error) {
+    console.error("[LOGIN] Supabase login failed:", error);
+    currentUser = null;
+    loginError.textContent = "Could not connect to the account service. Refresh and try again.";
   }
 });
 
@@ -1114,7 +1131,14 @@ togglePassword.addEventListener("click", () => {
   togglePassword.textContent = hidden ? "Hide" : "Show";
 });
 
-logoutButton.addEventListener("click", () => {
+logoutButton.addEventListener("click", async () => {
+  try {
+    await saveCloudSnapshot();
+    await supabaseClient.auth.signOut();
+  } catch (error) {
+    console.error("[AUTH] Logout error:", error);
+  }
+
   currentUser = null;
   setLoggedIn(false);
   window.location.reload();
