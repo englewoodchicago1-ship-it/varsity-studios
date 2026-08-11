@@ -362,3 +362,9 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Username/password login card is centered horizontally and vertically.
 - Removed left-side positioning overrides.
 - Centered layout also applies on mobile.
+
+
+## True login centering fix
+- The login view now uses a full-screen grid and centers the actual login card directly.
+- Previous parent grid/flex positioning can no longer keep the card stuck on the left.
+- Desktop and mobile use the same centered login behavior.
