@@ -7533,8 +7533,8 @@ async function prepareProfilePicture(file) {
   });
 
   const canvas = document.createElement("canvas");
-  canvas.width = 384;
-  canvas.height = 384;
+  canvas.width = 256;
+  canvas.height = 256;
 
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Could not prepare the profile picture.");
@@ -7555,17 +7555,66 @@ async function prepareProfilePicture(file) {
     canvas.height
   );
 
-  return canvas.toDataURL("image/jpeg", 0.84);
+  return canvas.toDataURL("image/jpeg", 0.82);
 }
 
 async function saveProfilePictureFromFile(file) {
+  const button = document.getElementById("changeProfilePictureButton");
+  const status = document.querySelector("[data-profile-picture-status]");
+
   try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Uploading...";
+    }
+
+    if (status) {
+      status.textContent = "Preparing image...";
+    }
+
     const prepared = await prepareProfilePicture(file);
+
+    // Update the visible preview immediately so the user can see the change.
+    document.querySelectorAll("[data-profile-avatar]").forEach(image => {
+      image.src = prepared;
+    });
+
     accountStorageSet(PROFILE_PICTURE_KEY, prepared);
+
+    // Verify that the browser save actually succeeded before reporting success.
+    const savedValue = accountStorageGet(PROFILE_PICTURE_KEY);
+    if (!savedValue) {
+      throw new Error("The picture could not be saved to this account.");
+    }
+
     updateProfilePictureUI();
-    scheduleCloudSave();
+
+    const updatedStatus = document.querySelector("[data-profile-picture-status]");
+    if (updatedStatus) {
+      updatedStatus.textContent = "Custom profile picture saved";
+    }
+
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Change profile picture";
+    }
+
+    await saveCloudSnapshot();
     return true;
   } catch (error) {
+    console.error("[PROFILE] Upload failed:", error);
+
+    if (button) {
+      button.disabled = false;
+      button.textContent = accountStorageGet(PROFILE_PICTURE_KEY)
+        ? "Change profile picture"
+        : "Upload profile picture";
+    }
+
+    if (status) {
+      status.textContent = error.message || "Profile picture upload failed.";
+    }
+
     window.alert(error.message || "Could not update the profile picture.");
     return false;
   }
@@ -7585,10 +7634,9 @@ if (profilePictureFileInput) {
     const file = profilePictureFileInput.files?.[0];
     if (!file) return;
 
-    const saved = await saveProfilePictureFromFile(file);
-    if (saved && activeView === "settings") {
-      renderSettingsPage();
-    }
+    // Keep the current Settings page in place so the preview updates instantly
+    // instead of rebuilding the entire page after selecting a file.
+    await saveProfilePictureFromFile(file);
   });
 }
 

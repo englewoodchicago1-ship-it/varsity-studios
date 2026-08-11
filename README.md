@@ -379,3 +379,12 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Removed a stale Settings panel that still referenced the old hardcoded `DASHBOARD_ACCOUNTS` object after Supabase migration.
 - That stale reference could throw an error for the Owner and stop Settings before the Your Profile section rendered.
 - Your Profile now renders defensively even if another Settings extension fails.
+
+
+## Profile picture upload reliability fix
+- Profile preview now changes immediately after selecting an image.
+- Removed the full Settings-page rerender after choosing a picture.
+- Added Uploading / Preparing / Saved feedback.
+- Added explicit save verification and visible errors.
+- Reduced avatar size to 256×256 before saving to keep account/cloud storage lightweight.
+- Cloud snapshot is pushed immediately after a successful profile-picture change.
