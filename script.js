@@ -2417,6 +2417,13 @@ function renderNavigation() {
     onClick: () => switchView("settings")
   }));
 
+  sidebarTabs.appendChild(createNavigationButton({
+    label: "Notes",
+    mark: "TXT",
+    active: activeView === "notes",
+    onClick: () => switchView("notes")
+  }));
+
   const folderView = parseFolderView();
 
   tabs.forEach((tab, index) => {
@@ -2447,6 +2454,7 @@ function renderCurrentView() {
   if (activeView === "websites") return renderGlobalWebsites();
   if (activeView === "developer") return renderDeveloperHub();
   if (activeView === "settings") return renderSettingsPage();
+  if (activeView === "notes") return renderNotesPage();
   if (isFolderWorkspace) return renderFolderWorkspace();
 
   renderCustomTab();
@@ -8013,16 +8021,6 @@ function openProfilePicturePicker() {
 }
 
 const profilePictureFileInput = document.getElementById("profilePictureFileInput");
-if (profilePictureFileInput) {
-  profilePictureFileInput.addEventListener("change", async () => {
-    const file = profilePictureFileInput.files?.[0];
-    if (!file) return;
-
-    // Keep the current Settings page in place so the preview updates instantly
-    // instead of rebuilding the entire page after selecting a file.
-    await saveProfilePictureFromFile(file);
-  });
-}
 
 
 const profileBaseUpdateSignedInIdentity = updateSignedInIdentity;
@@ -8165,8 +8163,9 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
     console.error("[SETTINGS] Base settings render error:", error);
   }
 
-  const settingsPage = tabContent.querySelector(".settings-page");
-  if (!settingsPage) {
+  let resolvedSettingsPage = tabContent.querySelector(".settings-page");
+
+  if (!resolvedSettingsPage) {
     tabContent.innerHTML = `
       <div class="settings-page">
         <section class="settings-panel">
@@ -8179,11 +8178,12 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
         </section>
       </div>
     `;
+    resolvedSettingsPage = tabContent.querySelector(".settings-page");
   }
 
-  const resolvedSettingsPage = tabContent.querySelector(".settings-page");
   if (!resolvedSettingsPage) return;
 
+  const savedPicture = getSavedProfilePicture();
   let panel = resolvedSettingsPage.querySelector(".profile-picture-settings-panel");
 
   if (!panel) {
@@ -8194,25 +8194,37 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
         <div>
           <span class="dashboard-kicker">YOUR PROFILE</span>
           <h3>Your Profile</h3>
-          <p>Upload or change the profile picture saved to your account.</p>
+          <p>Choose a profile picture from your device. It saves to this account.</p>
         </div>
       </div>
 
       <div class="profile-picture-settings-content">
         <div class="profile-picture-preview">
-          <img class="profile-avatar profile-avatar-large" data-profile-avatar src="${escapeAttribute(getSavedProfilePicture())}" alt="Profile picture preview" />
+          <img
+            id="profilePicturePreview"
+            class="profile-avatar profile-avatar-large"
+            src="${escapeAttribute(savedPicture)}"
+            alt="Profile picture preview"
+          />
         </div>
 
         <div class="profile-picture-settings-copy">
           <strong>${escapeHtml(getSignedInUser().displayName)}</strong>
-          <small data-profile-picture-status>
-            ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Custom profile picture" : "Using Varsity Studios logo"}
+          <small id="profilePictureStatus">
+            ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Custom profile picture saved" : "Using Varsity Studios logo"}
           </small>
 
           <div class="profile-picture-settings-actions">
-            <button id="changeProfilePictureButton" class="primary-button compact" type="button">
+            <label class="primary-button compact profile-upload-label" for="profilePictureInlineInput">
               ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Change profile picture" : "Upload profile picture"}
-            </button>
+            </label>
+
+            <input
+              id="profilePictureInlineInput"
+              class="hidden"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+            />
 
             <button id="removeProfilePictureButton" class="secondary-button compact" type="button">
               Use Varsity logo
@@ -8220,7 +8232,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
           </div>
 
           <p class="profile-picture-help">
-            Choose a PNG, JPG, WEBP, or GIF from your device.
+            PNG, JPG, WEBP, or GIF. The image is cropped square and optimized before saving.
           </p>
         </div>
       </div>
@@ -8229,16 +8241,57 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
     resolvedSettingsPage.insertBefore(panel, resolvedSettingsPage.firstElementChild);
   }
 
-  panel.querySelector("#changeProfilePictureButton")?.addEventListener("click", openProfilePicturePicker);
+  const inlineInput = panel.querySelector("#profilePictureInlineInput");
+  const preview = panel.querySelector("#profilePicturePreview");
+  const status = panel.querySelector("#profilePictureStatus");
+  const uploadLabel = panel.querySelector(".profile-upload-label");
 
-  panel.querySelector("#removeProfilePictureButton")?.addEventListener("click", () => {
-    accountStorageRemove(PROFILE_PICTURE_KEY);
-    updateProfilePictureUI();
-    scheduleCloudSave();
-    renderSettingsPage();
+  inlineInput?.addEventListener("change", async () => {
+    const file = inlineInput.files?.[0];
+    if (!file) return;
+
+    try {
+      if (status) status.textContent = "Preparing image...";
+      if (uploadLabel) uploadLabel.classList.add("profile-upload-busy");
+
+      const prepared = await prepareProfilePicture(file);
+
+      // Update the visible preview first.
+      if (preview) preview.src = prepared;
+
+      // Save locally under the signed-in account.
+      accountStorageSet(PROFILE_PICTURE_KEY, prepared);
+
+      const verified = accountStorageGet(PROFILE_PICTURE_KEY);
+      if (!verified) {
+        throw new Error("The picture could not be saved.");
+      }
+
+      if (preview) preview.src = verified;
+      if (status) status.textContent = "Custom profile picture saved";
+      if (uploadLabel) uploadLabel.textContent = "Change profile picture";
+
+      // Push immediately to the Supabase cloud snapshot.
+      await saveCloudSnapshot();
+    } catch (error) {
+      console.error("[PROFILE] Inline upload failed:", error);
+      if (status) status.textContent = error.message || "Profile picture upload failed.";
+      window.alert(error.message || "Could not update the profile picture.");
+    } finally {
+      if (uploadLabel) uploadLabel.classList.remove("profile-upload-busy");
+      if (inlineInput) inlineInput.value = "";
+    }
   });
 
-  updateProfilePictureUI();
+  panel.querySelector("#removeProfilePictureButton")?.addEventListener("click", async () => {
+    accountStorageRemove(PROFILE_PICTURE_KEY);
+
+    if (preview) preview.src = "assets/varsity-logo.png";
+    if (status) status.textContent = "Using Varsity Studios logo";
+    if (uploadLabel) uploadLabel.textContent = "Upload profile picture";
+
+    await saveCloudSnapshot();
+  });
 };
 
 
@@ -8247,7 +8300,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.02";
+const APP_VERSION = "v0.03";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -9044,7 +9097,7 @@ switchView = function switchViewWithPermanentNotes(nextView) {
 
 /* v0.02 guaranteed permanent Notes navigation */
 function ensurePermanentNotesButton() {
-  if (!currentUser || !sidebarTabs) return;
+  if (!sidebarTabs) return;
 
   let button = Array.from(sidebarTabs.querySelectorAll(".tab-button")).find(item =>
     item.querySelector(".tab-name")?.textContent?.trim() === "Notes"

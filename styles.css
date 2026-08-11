@@ -8763,3 +8763,26 @@ body.auth-locked #loginView,
     bottom: max(8px, env(safe-area-inset-bottom)) !important;
   }
 }
+
+
+/* v0.03 profile upload reliability */
+.profile-upload-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.profile-upload-label.profile-upload-busy {
+  opacity: 0.62;
+  pointer-events: none;
+}
+
+#profilePicturePreview {
+  background: rgba(255,255,255,0.02);
+}
+
+/* Make Notes nav distinguishable but still match the dashboard */
+.tab-button .tab-mark {
+  flex: 0 0 auto;
+}

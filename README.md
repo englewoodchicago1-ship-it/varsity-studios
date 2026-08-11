@@ -426,3 +426,12 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Permanent Notes tab is guaranteed after navigation renders and cannot be deleted.
 - Version UI now appears on the login screen, dashboard header, and bottom badge.
 - Current build is `v0.02`.
+
+
+## v0.03 — Notes + profile picture reliability
+- Notes is now inserted directly in the actual navigation renderer after Settings.
+- Notes is routed directly in the actual current-view renderer instead of relying only on wrappers.
+- The Profile Picture control now contains its own file input inside Settings.
+- Profile upload no longer depends on the old global hidden file input event.
+- The preview updates immediately, verifies the account save, and then pushes the change to Supabase.
+- Current build: `v0.03`.
