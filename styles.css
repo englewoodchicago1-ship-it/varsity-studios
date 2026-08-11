@@ -8260,3 +8260,427 @@ body.auth-locked #loginView,
   opacity: 0.6;
   cursor: wait;
 }
+
+
+/* Animation subfolders */
+.animation-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.animation-folder-help {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  line-height: 1.45;
+}
+
+.animation-subfolder,
+.workspace-animation-subfolder {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(255,255,255,0.018);
+}
+
+.animation-subfolder-heading {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.055);
+  background: rgba(255,255,255,0.022);
+}
+
+.animation-subfolder-heading > div:first-child {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 9px;
+}
+
+.animation-subfolder-heading strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.animation-subfolder-heading small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.59rem;
+}
+
+.animation-subfolder-icon {
+  grid-row: 1 / span 2;
+  min-width: 34px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--red-bright);
+  background: color-mix(in srgb, var(--red-bright) 9%, transparent);
+  font-size: 0.55rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.animation-subfolder-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.animation-subfolder-actions button {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.02);
+  font-size: 0.6rem;
+  font-weight: 750;
+}
+
+.animation-subfolder-actions button:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--red-bright) 25%, var(--border));
+}
+
+.animation-subfolder-empty {
+  padding: 14px 12px;
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+.animation-unfiled {
+  border-style: dashed;
+}
+
+.animation-move-select {
+  width: 150px;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 0 28px 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  background: var(--surface, #0a0b0f);
+  font-size: 0.62rem;
+}
+
+.animation-subfolder .animation-list,
+.workspace-animation-subfolder .workspace-item-list {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.animation-workspace-row {
+  grid-template-columns: auto minmax(0, 1fr) 160px auto !important;
+}
+
+@media (max-width: 860px) {
+  .animation-heading-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .animation-heading-actions button {
+    width: 100%;
+  }
+
+  .animation-subfolder-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .animation-subfolder-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .animation-subfolder-actions button {
+    width: 100%;
+  }
+
+  .animation-workspace-row {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+  }
+
+  .animation-workspace-row .animation-move-select,
+  .animation-workspace-row .workspace-item-actions {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .animation-move-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .animation-heading-actions,
+  .animation-subfolder-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Asset subfolders / general file storage / Notes / version */
+.asset-folder-workspace {
+  display: grid;
+  gap: 12px;
+}
+
+.asset-subfolder {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(255,255,255,0.018);
+}
+
+.asset-subfolder-heading {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.055);
+  background: rgba(255,255,255,0.022);
+}
+
+.asset-subfolder-heading > div:first-child {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 9px;
+}
+
+.asset-subfolder-heading strong {
+  overflow: hidden;
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-subfolder-heading small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.59rem;
+}
+
+.asset-subfolder-icon {
+  grid-row: 1 / span 2;
+  min-width: 34px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--red-bright);
+  background: color-mix(in srgb, var(--red-bright) 9%, transparent);
+  font-size: 0.55rem;
+  font-weight: 900;
+}
+
+.asset-subfolder-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.asset-subfolder-actions button {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.02);
+  font-size: 0.6rem;
+  font-weight: 750;
+}
+
+.asset-subfolder-empty {
+  padding: 14px 12px;
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+.asset-unfiled {
+  border-style: dashed;
+}
+
+.organizer-move-select {
+  width: 150px;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 0 28px 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  background: var(--surface, #0a0b0f);
+  font-size: 0.62rem;
+}
+
+.grouped-model-row,
+.general-file-row {
+  grid-template-columns: auto minmax(0, 1fr) 160px auto !important;
+}
+
+.workspace-media-item {
+  grid-template-columns: auto minmax(0, 1fr) 150px auto !important;
+}
+
+.notes-page {
+  display: grid;
+  gap: 14px;
+}
+
+.notes-form {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.notes-form input,
+.notes-form textarea {
+  width: 100%;
+}
+
+.notes-form textarea {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.notes-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.saved-notes-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.saved-note-card {
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.saved-note-card > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.saved-note-card strong {
+  font-size: 0.78rem;
+}
+
+.saved-note-card small {
+  color: var(--muted);
+  font-size: 0.58rem;
+}
+
+.saved-note-card p {
+  margin: 10px 0 0;
+  color: #b1b2ba;
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+.saved-note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 11px;
+}
+
+.saved-note-actions button {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  background: rgba(255,255,255,0.025);
+  font-size: 0.61rem;
+}
+
+.app-version-badge {
+  position: fixed;
+  right: 10px;
+  bottom: 8px;
+  z-index: 100;
+  padding: 4px 7px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.34);
+  background: rgba(0,0,0,0.28);
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+@media (max-width: 860px) {
+  .asset-subfolder-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .asset-subfolder-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grouped-model-row,
+  .general-file-row,
+  .workspace-media-item {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+  }
+
+  .organizer-move-select,
+  .grouped-model-row .workspace-item-actions,
+  .general-file-row .workspace-item-actions,
+  .workspace-media-item .workspace-item-actions {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .notes-form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .notes-form-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .asset-subfolder-actions,
+  .notes-form-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-note-card > div:first-child {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

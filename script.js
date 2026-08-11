@@ -294,9 +294,23 @@ function loadTabs() {
         ? tab.folders.map(folder => ({
             ...folder,
             isOpen: typeof folder.isOpen === "boolean" ? folder.isOpen : false,
-            animations: Array.isArray(folder.animations) ? folder.animations : [],
-            images: Array.isArray(folder.images) ? folder.images : [],
-            models: Array.isArray(folder.models) ? folder.models : []
+            animations: Array.isArray(folder.animations)
+              ? folder.animations.map(animation => ({
+                  ...animation,
+                  groupId: animation.groupId || null
+                }))
+              : [],
+            animationFolders: Array.isArray(folder.animationFolders) ? folder.animationFolders : [],
+            images: Array.isArray(folder.images)
+              ? folder.images.map(item => ({ ...item, groupId: item.groupId || null }))
+              : [],
+            imageFolders: Array.isArray(folder.imageFolders) ? folder.imageFolders : [],
+            models: Array.isArray(folder.models)
+              ? folder.models.map(item => ({ ...item, groupId: item.groupId || null }))
+              : [],
+            modelFolders: Array.isArray(folder.modelFolders) ? folder.modelFolders : [],
+            generalFiles: Array.isArray(folder.generalFiles) ? folder.generalFiles : [],
+            generalFileFolders: Array.isArray(folder.generalFileFolders) ? folder.generalFileFolders : []
           }))
         : []
     }));
@@ -572,39 +586,134 @@ function renderCustomTab() {
   renderFolders(activeTab);
 }
 
+function ensureAnimationFolderData(folder) {
+  if (!Array.isArray(folder.animationFolders)) folder.animationFolders = [];
+  if (!Array.isArray(folder.animations)) folder.animations = [];
+
+  folder.animations.forEach(animation => {
+    if (!("groupId" in animation)) animation.groupId = null;
+    if (
+      animation.groupId &&
+      !folder.animationFolders.some(group => group.id === animation.groupId)
+    ) {
+      animation.groupId = null;
+    }
+  });
+}
+
+function renderAnimationMoveSelect(folder, animation) {
+  ensureAnimationFolderData(folder);
+
+  return `
+    <select class="animation-move-select"
+      data-move-animation="${animation.id}"
+      data-folder-id="${folder.id}"
+      aria-label="Move ${escapeAttribute(animation.name)} to animation folder">
+      <option value="" ${!animation.groupId ? "selected" : ""}>No folder</option>
+      ${folder.animationFolders.map(group => `
+        <option value="${group.id}" ${animation.groupId === group.id ? "selected" : ""}>
+          ${escapeHtml(group.name)}
+        </option>
+      `).join("")}
+    </select>
+  `;
+}
+
+function renderAnimationRows(folder, animations, numberOffset = 0) {
+  if (!animations.length) {
+    return `
+      <div class="animation-subfolder-empty">
+        <span>No animations in this folder.</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="animation-list">
+      ${animations.map((animation, index) => `
+        <article class="animation-item" style="--animation-index:${index}">
+          <div class="animation-number">${String(index + 1 + numberOffset).padStart(2, "0")}</div>
+          <div class="animation-information">
+            <strong>${escapeHtml(animation.name)}</strong>
+            <span>rbxassetid://${escapeHtml(animation.animationId)}</span>
+          </div>
+          ${renderAnimationMoveSelect(folder, animation)}
+          <button class="delete-animation-button" type="button"
+            data-folder-id="${folder.id}" data-animation-id="${animation.id}">Delete</button>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
 function renderAnimationsSection(folder) {
+  ensureAnimationFolderData(folder);
+
+  const unfiled = folder.animations.filter(animation => !animation.groupId);
+
   return `
     <section class="animations-section">
       <div class="animations-heading">
         <div>
           <span class="animations-kicker">ROBLOX ASSETS</span>
           <h4>Saved animations</h4>
+          <small class="animation-folder-help">Organize animations into folders, or leave them under No folder.</small>
         </div>
-        <button class="add-animation-button" type="button" data-folder-id="${folder.id}">
-          <span>+</span> Add animation
-        </button>
+
+        <div class="animation-heading-actions">
+          <button class="new-animation-subfolder-button secondary-button compact" type="button"
+            data-folder-id="${folder.id}">
+            + New folder
+          </button>
+          <button class="add-animation-button" type="button" data-folder-id="${folder.id}">
+            <span>+</span> Add animation
+          </button>
+        </div>
       </div>
 
-      ${folder.animations.length ? `
-        <div class="animation-list">
-          ${folder.animations.map((animation, index) => `
-            <article class="animation-item" style="--animation-index:${index}">
-              <div class="animation-number">${String(index + 1).padStart(2, "0")}</div>
-              <div class="animation-information">
-                <strong>${escapeHtml(animation.name)}</strong>
-                <span>rbxassetid://${escapeHtml(animation.animationId)}</span>
+      ${folder.animationFolders.map(group => {
+        const groupedAnimations = folder.animations.filter(animation => animation.groupId === group.id);
+
+        return `
+          <section class="animation-subfolder">
+            <div class="animation-subfolder-heading">
+              <div>
+                <span class="animation-subfolder-icon">DIR</span>
+                <strong>${escapeHtml(group.name)}</strong>
+                <small>${groupedAnimations.length} animation${groupedAnimations.length === 1 ? "" : "s"}</small>
               </div>
-              <button class="delete-animation-button" type="button"
-                data-folder-id="${folder.id}" data-animation-id="${animation.id}">Delete</button>
-            </article>
-          `).join("")}
+              <div class="animation-subfolder-actions">
+                <button class="rename-animation-subfolder-button" type="button"
+                  data-folder-id="${folder.id}" data-animation-subfolder-id="${group.id}">Rename</button>
+                <button class="delete-animation-subfolder-button" type="button"
+                  data-folder-id="${folder.id}" data-animation-subfolder-id="${group.id}">Delete</button>
+              </div>
+            </div>
+            ${renderAnimationRows(folder, groupedAnimations)}
+          </section>
+        `;
+      }).join("")}
+
+      <section class="animation-subfolder animation-unfiled">
+        <div class="animation-subfolder-heading">
+          <div>
+            <span class="animation-subfolder-icon">—</span>
+            <strong>No folder</strong>
+            <small>${unfiled.length} animation${unfiled.length === 1 ? "" : "s"}</small>
+          </div>
         </div>
-      ` : `
+        ${unfiled.length
+          ? renderAnimationRows(folder, unfiled)
+          : `<div class="animation-subfolder-empty"><span>No unfiled animations.</span></div>`
+        }
+      </section>
+
+      ${!folder.animations.length && !folder.animationFolders.length ? `
         <div class="animations-empty">
           <span>No animations saved yet.</span>
-          <small>Add an animation name and Roblox animation ID.</small>
+          <small>Add an animation, then create folders whenever you want to organize them.</small>
         </div>
-      `}
+      ` : ""}
     </section>
   `;
 }
@@ -773,6 +882,45 @@ function bindFolderEvents() {
     });
   });
 
+  tabContent.querySelectorAll(".new-animation-subfolder-button").forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      createAnimationSubfolder(button.dataset.folderId);
+    });
+  });
+
+  tabContent.querySelectorAll(".rename-animation-subfolder-button").forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      renameAnimationSubfolder(
+        button.dataset.folderId,
+        button.dataset.animationSubfolderId
+      );
+    });
+  });
+
+  tabContent.querySelectorAll(".delete-animation-subfolder-button").forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      deleteAnimationSubfolder(
+        button.dataset.folderId,
+        button.dataset.animationSubfolderId
+      );
+    });
+  });
+
+  tabContent.querySelectorAll(".animation-move-select").forEach(select => {
+    select.addEventListener("click", event => event.stopPropagation());
+    select.addEventListener("change", event => {
+      event.stopPropagation();
+      moveAnimationToSubfolder(
+        select.dataset.folderId,
+        select.dataset.moveAnimation,
+        select.value
+      );
+    });
+  });
+
   tabContent.querySelectorAll(".delete-animation-button").forEach(button => {
     button.addEventListener("click", event => {
       event.stopPropagation();
@@ -860,6 +1008,114 @@ function openAnimationDialog(folderId) {
   animationError.textContent = "";
   animationDialog.showModal();
   setTimeout(() => animationName.focus(), 0);
+}
+
+function createAnimationSubfolder(folderId) {
+  const folder = getFolder(folderId);
+  if (!folder || !isAnimationsFolder(folder)) return;
+
+  ensureAnimationFolderData(folder);
+
+  const value = window.prompt("Animation folder name:");
+  if (value === null) return;
+
+  const name = value.trim();
+  if (!name) return;
+
+  if (folder.animationFolders.some(group => group.name.toLowerCase() === name.toLowerCase())) {
+    window.alert("An animation folder with that name already exists.");
+    return;
+  }
+
+  folder.animationFolders.push({
+    id: makeId(name),
+    name
+  });
+
+  saveData();
+
+  if (activeView.startsWith("folder:")) {
+    renderFolderWorkspace();
+  } else {
+    renderFolders(getActiveTab());
+  }
+}
+
+function renameAnimationSubfolder(folderId, groupId) {
+  const folder = getFolder(folderId);
+  const group = folder?.animationFolders?.find(item => item.id === groupId);
+  if (!folder || !group) return;
+
+  const value = window.prompt("Rename animation folder:", group.name);
+  if (value === null) return;
+
+  const name = value.trim();
+  if (!name || name === group.name) return;
+
+  if (
+    folder.animationFolders.some(
+      item => item.id !== groupId && item.name.toLowerCase() === name.toLowerCase()
+    )
+  ) {
+    window.alert("An animation folder with that name already exists.");
+    return;
+  }
+
+  group.name = name;
+  saveData();
+
+  if (activeView.startsWith("folder:")) {
+    renderFolderWorkspace();
+  } else {
+    renderFolders(getActiveTab());
+  }
+}
+
+function deleteAnimationSubfolder(folderId, groupId) {
+  const folder = getFolder(folderId);
+  const group = folder?.animationFolders?.find(item => item.id === groupId);
+  if (!folder || !group) return;
+
+  const count = folder.animations.filter(animation => animation.groupId === groupId).length;
+  const message = count
+    ? `Delete the "${group.name}" animation folder? Its ${count} animation${count === 1 ? "" : "s"} will move to No folder.`
+    : `Delete the "${group.name}" animation folder?`;
+
+  if (!window.confirm(message)) return;
+
+  folder.animations.forEach(animation => {
+    if (animation.groupId === groupId) animation.groupId = null;
+  });
+
+  folder.animationFolders = folder.animationFolders.filter(item => item.id !== groupId);
+  saveData();
+
+  if (activeView.startsWith("folder:")) {
+    renderFolderWorkspace();
+  } else {
+    renderFolders(getActiveTab());
+  }
+}
+
+function moveAnimationToSubfolder(folderId, animationId, groupId) {
+  const folder = getFolder(folderId);
+  const animation = folder?.animations?.find(item => item.id === animationId);
+  if (!folder || !animation) return;
+
+  ensureAnimationFolderData(folder);
+
+  if (groupId && !folder.animationFolders.some(group => group.id === groupId)) {
+    return;
+  }
+
+  animation.groupId = groupId || null;
+  saveData();
+
+  if (activeView.startsWith("folder:")) {
+    renderFolderWorkspace();
+  } else {
+    renderFolders(getActiveTab());
+  }
 }
 
 function normalizeAnimationId(value) {
@@ -1196,8 +1452,13 @@ folderForm.addEventListener("submit", event => {
     description,
     isOpen: false,
     animations: [],
+    animationFolders: [],
     images: [],
-    models: []
+    imageFolders: [],
+    models: [],
+    modelFolders: [],
+    generalFiles: [],
+    generalFileFolders: []
   });
 
   saveData();
@@ -1228,7 +1489,7 @@ animationForm.addEventListener("submit", event => {
     return;
   }
 
-  folder.animations.push({ id: makeId(name), name, animationId: id });
+  folder.animations.push({ id: makeId(name), name, animationId: id, groupId: null });
   folder.isOpen = true;
   saveData();
   animationDialog.close();
@@ -1573,7 +1834,10 @@ function getFolderTypeLabel(folder) {
 
 function renderFolderAddButton(folder) {
   if (isAnimationsFolder(folder)) {
-    return `<button id="workspaceAddAnimationButton" class="primary-button compact" type="button">+ Add animation</button>`;
+    return `
+      <button id="workspaceNewAnimationFolderButton" class="secondary-button compact" type="button">+ New folder</button>
+      <button id="workspaceAddAnimationButton" class="primary-button compact" type="button">+ Add animation</button>
+    `;
   }
 
   if (isImageFolder(folder)) {
@@ -1589,23 +1853,80 @@ function renderFolderAddButton(folder) {
 
 function renderDedicatedFolderList(folder) {
   if (isAnimationsFolder(folder)) {
-    if (!folder.animations.length) return renderWorkspaceEmpty("No animations saved yet.", "Add an animation name and Roblox animation ID.");
+    ensureAnimationFolderData(folder);
 
-    return `
-      <div class="workspace-item-list">
-        ${folder.animations.map((animation, index) => `
-          <article class="workspace-list-item">
+    const unfiled = folder.animations.filter(animation => !animation.groupId);
+
+    if (!folder.animations.length && !folder.animationFolders.length) {
+      return renderWorkspaceEmpty(
+        "No animations saved yet.",
+        "Add an animation, or create a folder first and move animations into it later."
+      );
+    }
+
+    const renderWorkspaceAnimationRows = animations => `
+      <div class="workspace-item-list animation-workspace-list">
+        ${animations.map((animation, index) => `
+          <article class="workspace-list-item animation-workspace-row">
             <div class="workspace-item-index">${String(index + 1).padStart(2, "0")}</div>
             <div class="workspace-item-main">
               <strong>${escapeHtml(animation.name)}</strong>
               <span class="workspace-code">rbxassetid://${escapeHtml(animation.animationId)}</span>
             </div>
+            ${renderAnimationMoveSelect(folder, animation)}
             <div class="workspace-item-actions">
               <button class="workspace-edit-button" type="button" data-edit-animation="${animation.id}">Edit</button>
               <button class="workspace-delete-button" type="button" data-delete-animation="${animation.id}">Delete</button>
             </div>
           </article>
         `).join("")}
+      </div>
+    `;
+
+    return `
+      <div class="animation-folder-workspace">
+        ${folder.animationFolders.map(group => {
+          const groupedAnimations = folder.animations.filter(animation => animation.groupId === group.id);
+
+          return `
+            <section class="animation-subfolder workspace-animation-subfolder">
+              <div class="animation-subfolder-heading">
+                <div>
+                  <span class="animation-subfolder-icon">DIR</span>
+                  <strong>${escapeHtml(group.name)}</strong>
+                  <small>${groupedAnimations.length} animation${groupedAnimations.length === 1 ? "" : "s"}</small>
+                </div>
+
+                <div class="animation-subfolder-actions">
+                  <button class="rename-animation-subfolder-button" type="button"
+                    data-folder-id="${folder.id}" data-animation-subfolder-id="${group.id}">Rename</button>
+                  <button class="delete-animation-subfolder-button" type="button"
+                    data-folder-id="${folder.id}" data-animation-subfolder-id="${group.id}">Delete folder</button>
+                </div>
+              </div>
+
+              ${groupedAnimations.length
+                ? renderWorkspaceAnimationRows(groupedAnimations)
+                : `<div class="animation-subfolder-empty"><span>No animations in this folder.</span></div>`
+              }
+            </section>
+          `;
+        }).join("")}
+
+        <section class="animation-subfolder workspace-animation-subfolder animation-unfiled">
+          <div class="animation-subfolder-heading">
+            <div>
+              <span class="animation-subfolder-icon">—</span>
+              <strong>No folder</strong>
+              <small>${unfiled.length} animation${unfiled.length === 1 ? "" : "s"}</small>
+            </div>
+          </div>
+
+          ${unfiled.length
+            ? renderWorkspaceAnimationRows(unfiled)
+            : `<div class="animation-subfolder-empty"><span>No unfiled animations.</span></div>`
+          }
+        </section>
       </div>
     `;
   }
@@ -1678,6 +1999,28 @@ function renderWorkspaceEmpty(title, description) {
 function bindDedicatedFolderEvents(folder) {
   document.getElementById("workspaceAddAnimationButton")?.addEventListener("click", () => {
     openAnimationDialog(folder.id);
+  });
+
+  document.getElementById("workspaceNewAnimationFolderButton")?.addEventListener("click", () => {
+    createAnimationSubfolder(folder.id);
+  });
+
+  tabContent.querySelectorAll(".rename-animation-subfolder-button").forEach(button => {
+    button.addEventListener("click", () => {
+      renameAnimationSubfolder(folder.id, button.dataset.animationSubfolderId);
+    });
+  });
+
+  tabContent.querySelectorAll(".delete-animation-subfolder-button").forEach(button => {
+    button.addEventListener("click", () => {
+      deleteAnimationSubfolder(folder.id, button.dataset.animationSubfolderId);
+    });
+  });
+
+  tabContent.querySelectorAll(".animation-move-select").forEach(select => {
+    select.addEventListener("change", () => {
+      moveAnimationToSubfolder(folder.id, select.dataset.moveAnimation, select.value);
+    });
   });
 
   document.getElementById("workspaceUploadImageButton")?.addEventListener("click", () => {
@@ -7855,4 +8198,804 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
   });
 
   updateProfilePictureUI();
+};
+
+
+/* =========================================================
+   ORGANIZER UPGRADE — MODELS / ICONS SUBFOLDERS,
+   GENERAL FILES, NOTES, VERSION
+   ========================================================= */
+
+const APP_VERSION = "v0.01";
+const NOTES_STORAGE_KEY = "varsityNotesV1";
+const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
+const MAX_GENERAL_FILES_PER_FOLDER = 20;
+const MAX_NOTES_FILE_SIZE = 2 * 1024 * 1024;
+
+const generalFolderFileInput = document.getElementById("generalFolderFileInput");
+const notesFileInput = document.getElementById("notesFileInput");
+
+let activeGeneralFileFolderId = null;
+
+function ensureOrganizerArrays(folder) {
+  if (!folder) return;
+
+  if (!Array.isArray(folder.imageFolders)) folder.imageFolders = [];
+  if (!Array.isArray(folder.modelFolders)) folder.modelFolders = [];
+  if (!Array.isArray(folder.generalFiles)) folder.generalFiles = [];
+  if (!Array.isArray(folder.generalFileFolders)) folder.generalFileFolders = [];
+
+  if (!Array.isArray(folder.images)) folder.images = [];
+  if (!Array.isArray(folder.models)) folder.models = [];
+
+  folder.images.forEach(item => {
+    if (!("groupId" in item)) item.groupId = null;
+    if (item.groupId && !folder.imageFolders.some(group => group.id === item.groupId)) {
+      item.groupId = null;
+    }
+  });
+
+  folder.models.forEach(item => {
+    if (!("groupId" in item)) item.groupId = null;
+    if (item.groupId && !folder.modelFolders.some(group => group.id === item.groupId)) {
+      item.groupId = null;
+    }
+  });
+
+  folder.generalFiles.forEach(item => {
+    if (!("groupId" in item)) item.groupId = null;
+    if (item.groupId && !folder.generalFileFolders.some(group => group.id === item.groupId)) {
+      item.groupId = null;
+    }
+  });
+}
+
+function createOrganizerGroup(folder, type) {
+  ensureOrganizerArrays(folder);
+
+  const labels = {
+    image: "icon/image folder",
+    model: "model folder",
+    file: "file folder"
+  };
+
+  const value = window.prompt(`New ${labels[type]} name:`);
+  if (value === null) return;
+
+  const name = value.trim();
+  if (!name) return;
+
+  const collection =
+    type === "image" ? folder.imageFolders :
+    type === "model" ? folder.modelFolders :
+    folder.generalFileFolders;
+
+  if (collection.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+    window.alert("A folder with that name already exists.");
+    return;
+  }
+
+  collection.push({ id: makeId(name), name });
+  saveData();
+  renderFolderWorkspace();
+}
+
+function renameOrganizerGroup(folder, type, groupId) {
+  ensureOrganizerArrays(folder);
+
+  const collection =
+    type === "image" ? folder.imageFolders :
+    type === "model" ? folder.modelFolders :
+    folder.generalFileFolders;
+
+  const group = collection.find(item => item.id === groupId);
+  if (!group) return;
+
+  const value = window.prompt("Rename folder:", group.name);
+  if (value === null) return;
+
+  const name = value.trim();
+  if (!name || name === group.name) return;
+
+  if (collection.some(item => item.id !== group.id && item.name.toLowerCase() === name.toLowerCase())) {
+    window.alert("A folder with that name already exists.");
+    return;
+  }
+
+  group.name = name;
+  saveData();
+  renderFolderWorkspace();
+}
+
+function deleteOrganizerGroup(folder, type, groupId) {
+  ensureOrganizerArrays(folder);
+
+  const collectionKey =
+    type === "image" ? "imageFolders" :
+    type === "model" ? "modelFolders" :
+    "generalFileFolders";
+
+  const itemKey =
+    type === "image" ? "images" :
+    type === "model" ? "models" :
+    "generalFiles";
+
+  const group = folder[collectionKey].find(item => item.id === groupId);
+  if (!group) return;
+
+  const count = folder[itemKey].filter(item => item.groupId === groupId).length;
+
+  if (!window.confirm(
+    count
+      ? `Delete "${group.name}"? ${count} item${count === 1 ? "" : "s"} will move to No folder.`
+      : `Delete "${group.name}"?`
+  )) return;
+
+  folder[itemKey].forEach(item => {
+    if (item.groupId === groupId) item.groupId = null;
+  });
+
+  folder[collectionKey] = folder[collectionKey].filter(item => item.id !== groupId);
+  saveData();
+  renderFolderWorkspace();
+}
+
+function moveOrganizerItem(folder, type, itemId, groupId) {
+  ensureOrganizerArrays(folder);
+
+  const collection =
+    type === "image" ? folder.images :
+    type === "model" ? folder.models :
+    folder.generalFiles;
+
+  const groupCollection =
+    type === "image" ? folder.imageFolders :
+    type === "model" ? folder.modelFolders :
+    folder.generalFileFolders;
+
+  const item = collection.find(entry => entry.id === itemId);
+  if (!item) return;
+
+  if (groupId && !groupCollection.some(group => group.id === groupId)) return;
+
+  item.groupId = groupId || null;
+  saveData();
+  renderFolderWorkspace();
+}
+
+function renderOrganizerSelect(folder, type, item) {
+  ensureOrganizerArrays(folder);
+
+  const groups =
+    type === "image" ? folder.imageFolders :
+    type === "model" ? folder.modelFolders :
+    folder.generalFileFolders;
+
+  return `
+    <select class="organizer-move-select"
+      data-organizer-type="${type}"
+      data-organizer-item="${item.id}"
+      aria-label="Move ${escapeAttribute(item.name || item.fileName || "item")}">
+      <option value="" ${!item.groupId ? "selected" : ""}>No folder</option>
+      ${groups.map(group => `
+        <option value="${group.id}" ${item.groupId === group.id ? "selected" : ""}>
+          ${escapeHtml(group.name)}
+        </option>
+      `).join("")}
+    </select>
+  `;
+}
+
+function renderOrganizerGroupHeading(folder, type, group, count) {
+  return `
+    <div class="asset-subfolder-heading">
+      <div>
+        <span class="asset-subfolder-icon">DIR</span>
+        <strong>${escapeHtml(group.name)}</strong>
+        <small>${count} item${count === 1 ? "" : "s"}</small>
+      </div>
+      <div class="asset-subfolder-actions">
+        <button type="button" data-organizer-rename="${group.id}" data-organizer-type="${type}">Rename</button>
+        <button type="button" data-organizer-delete="${group.id}" data-organizer-type="${type}">Delete folder</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderGroupedImages(folder) {
+  ensureOrganizerArrays(folder);
+
+  const renderRows = items => items.length ? `
+    <div class="workspace-media-list">
+      ${items.map(image => `
+        <article class="workspace-media-item">
+          <button class="workspace-media-preview" type="button" data-preview-image="${escapeAttribute(image.dataUrl)}">
+            <img src="${escapeAttribute(image.dataUrl)}" alt="${escapeAttribute(image.name)}" />
+          </button>
+          <div class="workspace-item-main">
+            <strong>${escapeHtml(image.name)}</strong>
+            <span>${formatFileSize(image.size)} • ${escapeHtml(image.type || "Image")}</span>
+          </div>
+          ${renderOrganizerSelect(folder, "image", image)}
+          <div class="workspace-item-actions">
+            <button class="workspace-edit-button" type="button" data-edit-image="${image.id}">Rename</button>
+            <button class="workspace-download-button" type="button" data-download-image="${image.id}">Download</button>
+            <button class="workspace-delete-button" type="button" data-delete-image="${image.id}">Delete</button>
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  ` : `<div class="asset-subfolder-empty">No images/icons in this folder.</div>`;
+
+  const unfiled = folder.images.filter(item => !item.groupId);
+
+  return `
+    <div class="asset-folder-workspace">
+      ${folder.imageFolders.map(group => {
+        const items = folder.images.filter(item => item.groupId === group.id);
+        return `
+          <section class="asset-subfolder">
+            ${renderOrganizerGroupHeading(folder, "image", group, items.length)}
+            ${renderRows(items)}
+          </section>
+        `;
+      }).join("")}
+
+      <section class="asset-subfolder asset-unfiled">
+        <div class="asset-subfolder-heading">
+          <div>
+            <span class="asset-subfolder-icon">—</span>
+            <strong>No folder</strong>
+            <small>${unfiled.length} item${unfiled.length === 1 ? "" : "s"}</small>
+          </div>
+        </div>
+        ${renderRows(unfiled)}
+      </section>
+    </div>
+  `;
+}
+
+function renderGroupedModels(folder) {
+  ensureOrganizerArrays(folder);
+
+  const renderRows = items => items.length ? `
+    <div class="workspace-item-list">
+      ${items.map(model => `
+        <article class="workspace-list-item grouped-model-row">
+          <div class="model-file-icon">${escapeHtml(fileExtension(model.fileName))}</div>
+          <div class="workspace-item-main">
+            <strong>${escapeHtml(model.name)}</strong>
+            <p>${escapeHtml(model.description)}</p>
+            <span>${escapeHtml(model.fileName)} • ${formatFileSize(model.size)}</span>
+          </div>
+          ${renderOrganizerSelect(folder, "model", model)}
+          <div class="workspace-item-actions">
+            <button class="workspace-edit-button" type="button" data-edit-model="${model.id}">Edit</button>
+            <button class="workspace-download-button" type="button" data-download-model="${model.id}">Download</button>
+            <button class="workspace-delete-button" type="button" data-delete-model="${model.id}">Delete</button>
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  ` : `<div class="asset-subfolder-empty">No models in this folder.</div>`;
+
+  const unfiled = folder.models.filter(item => !item.groupId);
+
+  return `
+    <div class="asset-folder-workspace">
+      ${folder.modelFolders.map(group => {
+        const items = folder.models.filter(item => item.groupId === group.id);
+        return `
+          <section class="asset-subfolder">
+            ${renderOrganizerGroupHeading(folder, "model", group, items.length)}
+            ${renderRows(items)}
+          </section>
+        `;
+      }).join("")}
+
+      <section class="asset-subfolder asset-unfiled">
+        <div class="asset-subfolder-heading">
+          <div>
+            <span class="asset-subfolder-icon">—</span>
+            <strong>No folder</strong>
+            <small>${unfiled.length} item${unfiled.length === 1 ? "" : "s"}</small>
+          </div>
+        </div>
+        ${renderRows(unfiled)}
+      </section>
+    </div>
+  `;
+}
+
+function renderGeneralFiles(folder) {
+  ensureOrganizerArrays(folder);
+
+  const renderRows = items => items.length ? `
+    <div class="workspace-item-list">
+      ${items.map(file => `
+        <article class="workspace-list-item general-file-row">
+          <div class="model-file-icon">${escapeHtml(fileExtension(file.fileName || file.name))}</div>
+          <div class="workspace-item-main">
+            <strong>${escapeHtml(file.name)}</strong>
+            <span>${escapeHtml(file.fileName || file.name)} • ${formatFileSize(file.size)}</span>
+          </div>
+          ${renderOrganizerSelect(folder, "file", file)}
+          <div class="workspace-item-actions">
+            <button class="workspace-download-button" type="button" data-download-general-file="${file.id}">Download</button>
+            <button class="workspace-delete-button" type="button" data-delete-general-file="${file.id}">Delete</button>
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  ` : `<div class="asset-subfolder-empty">No files in this folder.</div>`;
+
+  const unfiled = folder.generalFiles.filter(item => !item.groupId);
+
+  if (!folder.generalFiles.length && !folder.generalFileFolders.length) {
+    return renderWorkspaceEmpty(
+      "No files uploaded yet.",
+      "Upload any file from your device. This works in normal folders too."
+    );
+  }
+
+  return `
+    <div class="asset-folder-workspace">
+      ${folder.generalFileFolders.map(group => {
+        const items = folder.generalFiles.filter(item => item.groupId === group.id);
+        return `
+          <section class="asset-subfolder">
+            ${renderOrganizerGroupHeading(folder, "file", group, items.length)}
+            ${renderRows(items)}
+          </section>
+        `;
+      }).join("")}
+
+      <section class="asset-subfolder asset-unfiled">
+        <div class="asset-subfolder-heading">
+          <div>
+            <span class="asset-subfolder-icon">—</span>
+            <strong>No folder</strong>
+            <small>${unfiled.length} file${unfiled.length === 1 ? "" : "s"}</small>
+          </div>
+        </div>
+        ${renderRows(unfiled)}
+      </section>
+    </div>
+  `;
+}
+
+async function readFileAsDataUrl(file) {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error(`Could not read ${file.name}.`));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadGeneralFiles(folder, files) {
+  ensureOrganizerArrays(folder);
+
+  const remaining = MAX_GENERAL_FILES_PER_FOLDER - folder.generalFiles.length;
+  const selected = Array.from(files).slice(0, Math.max(0, remaining));
+
+  if (!selected.length) {
+    window.alert("This folder has reached its file limit.");
+    return;
+  }
+
+  for (const file of selected) {
+    if (file.size > MAX_GENERAL_FILE_SIZE) {
+      window.alert(`${file.name} is larger than 2 MB and was skipped.`);
+      continue;
+    }
+
+    folder.generalFiles.push({
+      id: makeId(file.name),
+      name: file.name,
+      fileName: file.name,
+      type: file.type || "File",
+      size: file.size,
+      dataUrl: await readFileAsDataUrl(file),
+      uploadedAt: Date.now(),
+      groupId: null
+    });
+  }
+
+  saveData();
+  renderFolderWorkspace();
+}
+
+const organizerBaseRenderFolderAddButton = renderFolderAddButton;
+renderFolderAddButton = function renderFolderAddButtonWithGeneralFiles(folder) {
+  ensureOrganizerArrays(folder);
+
+  if (isImageFolder(folder)) {
+    return `
+      <button id="workspaceNewImageFolderButton" class="secondary-button compact" type="button">+ New folder</button>
+      <button id="workspaceUploadImageButton" class="primary-button compact" type="button">+ Upload images</button>
+    `;
+  }
+
+  if (isModelsFolder(folder)) {
+    return `
+      <button id="workspaceNewModelFolderButton" class="secondary-button compact" type="button">+ New folder</button>
+      <button id="workspaceUploadModelButton" class="primary-button compact" type="button">+ Upload model</button>
+    `;
+  }
+
+  if (!isAnimationsFolder(folder)) {
+    return `
+      <button id="workspaceNewGeneralFileFolderButton" class="secondary-button compact" type="button">+ New folder</button>
+      <button id="workspaceUploadGeneralFileButton" class="primary-button compact" type="button">+ Upload files</button>
+    `;
+  }
+
+  return organizerBaseRenderFolderAddButton(folder);
+};
+
+const organizerBaseRenderDedicatedFolderList = renderDedicatedFolderList;
+renderDedicatedFolderList = function renderDedicatedFolderListWithOrganizer(folder) {
+  ensureOrganizerArrays(folder);
+
+  if (isImageFolder(folder)) return renderGroupedImages(folder);
+  if (isModelsFolder(folder)) return renderGroupedModels(folder);
+  if (!isAnimationsFolder(folder)) return renderGeneralFiles(folder);
+
+  return organizerBaseRenderDedicatedFolderList(folder);
+};
+
+const organizerBaseGetFolderItemCount = getFolderItemCount;
+getFolderItemCount = function getFolderItemCountWithGeneralFiles(folder) {
+  ensureOrganizerArrays(folder);
+  if (!isAnimationsFolder(folder) && !isImageFolder(folder) && !isModelsFolder(folder)) {
+    return folder.generalFiles.length;
+  }
+  return organizerBaseGetFolderItemCount(folder);
+};
+
+const organizerBaseBindDedicatedFolderEvents = bindDedicatedFolderEvents;
+bindDedicatedFolderEvents = function bindDedicatedFolderEventsWithOrganizer(folder) {
+  organizerBaseBindDedicatedFolderEvents(folder);
+  ensureOrganizerArrays(folder);
+
+  document.getElementById("workspaceNewImageFolderButton")?.addEventListener("click", () => {
+    createOrganizerGroup(folder, "image");
+  });
+
+  document.getElementById("workspaceNewModelFolderButton")?.addEventListener("click", () => {
+    createOrganizerGroup(folder, "model");
+  });
+
+  document.getElementById("workspaceNewGeneralFileFolderButton")?.addEventListener("click", () => {
+    createOrganizerGroup(folder, "file");
+  });
+
+  document.getElementById("workspaceUploadGeneralFileButton")?.addEventListener("click", () => {
+    activeGeneralFileFolderId = folder.id;
+    generalFolderFileInput.value = "";
+    generalFolderFileInput.click();
+  });
+
+  tabContent.querySelectorAll("[data-organizer-rename]").forEach(button => {
+    button.addEventListener("click", () => {
+      renameOrganizerGroup(folder, button.dataset.organizerType, button.dataset.organizerRename);
+    });
+  });
+
+  tabContent.querySelectorAll("[data-organizer-delete]").forEach(button => {
+    button.addEventListener("click", () => {
+      deleteOrganizerGroup(folder, button.dataset.organizerType, button.dataset.organizerDelete);
+    });
+  });
+
+  tabContent.querySelectorAll(".organizer-move-select").forEach(select => {
+    select.addEventListener("change", () => {
+      moveOrganizerItem(
+        folder,
+        select.dataset.organizerType,
+        select.dataset.organizerItem,
+        select.value
+      );
+    });
+  });
+
+  tabContent.querySelectorAll("[data-download-general-file]").forEach(button => {
+    button.addEventListener("click", () => {
+      const file = folder.generalFiles.find(item => item.id === button.dataset.downloadGeneralFile);
+      if (!file) return;
+      triggerDownload(file.dataUrl, file.fileName || file.name);
+    });
+  });
+
+  tabContent.querySelectorAll("[data-delete-general-file]").forEach(button => {
+    button.addEventListener("click", () => {
+      const file = folder.generalFiles.find(item => item.id === button.dataset.deleteGeneralFile);
+      if (!file) return;
+      if (!window.confirm(`Delete "${file.name}"?`)) return;
+
+      folder.generalFiles = folder.generalFiles.filter(item => item.id !== file.id);
+      saveData();
+      renderFolderWorkspace();
+    });
+  });
+};
+
+generalFolderFileInput?.addEventListener("change", async () => {
+  const folder = getFolder(activeGeneralFileFolderId);
+  activeGeneralFileFolderId = null;
+
+  if (!folder) return;
+
+  try {
+    await uploadGeneralFiles(folder, generalFolderFileInput.files || []);
+  } catch (error) {
+    console.error("[FILES] Upload failed:", error);
+    window.alert("One or more files could not be uploaded.");
+  } finally {
+    generalFolderFileInput.value = "";
+  }
+});
+
+/* ---------------- NOTES TAB ---------------- */
+
+function loadNotesData() {
+  try {
+    const saved = JSON.parse(accountStorageGet(NOTES_STORAGE_KEY) || "{}");
+    return {
+      notes: Array.isArray(saved.notes) ? saved.notes : [],
+      files: Array.isArray(saved.files) ? saved.files : []
+    };
+  } catch {
+    return { notes: [], files: [] };
+  }
+}
+
+function saveNotesData(data) {
+  accountStorageSet(NOTES_STORAGE_KEY, JSON.stringify(data));
+}
+
+function renderNotesPage() {
+  const notesData = loadNotesData();
+
+  pageTitle.textContent = "Notes";
+  pageSubtitle.textContent = "Personal notes and note files saved to your account.";
+  contentTitle.textContent = "Notes";
+
+  addFolderButton.classList.add("hidden");
+  deleteTabButton.classList.add("hidden");
+
+  tabContent.innerHTML = `
+    <div class="notes-page">
+      <section class="settings-panel notes-create-panel">
+        <div class="settings-heading">
+          <div>
+            <span class="dashboard-kicker">NOTES</span>
+            <h3>Save a note</h3>
+            <p>Write quick development notes here, or upload note/document files from your device.</p>
+          </div>
+        </div>
+
+        <form id="quickNoteForm" class="notes-form">
+          <input id="quickNoteTitle" type="text" maxlength="80" placeholder="Note title" required />
+          <textarea id="quickNoteBody" maxlength="12000" placeholder="Write your note..." required></textarea>
+          <div class="notes-form-actions">
+            <button id="uploadNotesFileButton" class="secondary-button" type="button">Upload note files</button>
+            <button class="primary-button" type="submit">Save note</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="settings-panel">
+        <div class="settings-heading">
+          <div>
+            <span class="dashboard-kicker">SAVED NOTES</span>
+            <h3>Your notes</h3>
+          </div>
+        </div>
+
+        ${notesData.notes.length ? `
+          <div class="saved-notes-list">
+            ${notesData.notes.map(note => `
+              <article class="saved-note-card">
+                <div>
+                  <strong>${escapeHtml(note.title)}</strong>
+                  <small>${new Date(note.updatedAt || note.createdAt).toLocaleString()}</small>
+                </div>
+                <p>${escapeHtml(note.body).replace(/\n/g, "<br>")}</p>
+                <div class="saved-note-actions">
+                  <button type="button" data-edit-note="${note.id}">Edit</button>
+                  <button type="button" data-delete-note="${note.id}">Delete</button>
+                </div>
+              </article>
+            `).join("")}
+          </div>
+        ` : renderWorkspaceEmpty("No notes yet.", "Write your first note above.")}
+      </section>
+
+      <section class="settings-panel">
+        <div class="settings-heading">
+          <div>
+            <span class="dashboard-kicker">NOTE FILES</span>
+            <h3>Uploaded notes</h3>
+          </div>
+        </div>
+
+        ${notesData.files.length ? `
+          <div class="workspace-item-list">
+            ${notesData.files.map(file => `
+              <article class="workspace-list-item">
+                <div class="model-file-icon">${escapeHtml(fileExtension(file.fileName))}</div>
+                <div class="workspace-item-main">
+                  <strong>${escapeHtml(file.name)}</strong>
+                  <span>${formatFileSize(file.size)} • ${escapeHtml(file.type || "Document")}</span>
+                </div>
+                <div class="workspace-item-actions">
+                  <button class="workspace-download-button" type="button" data-download-note-file="${file.id}">Download</button>
+                  <button class="workspace-delete-button" type="button" data-delete-note-file="${file.id}">Delete</button>
+                </div>
+              </article>
+            `).join("")}
+          </div>
+        ` : renderWorkspaceEmpty("No note files uploaded.", "Upload TXT, Markdown, PDF, Word, or other note files.")}
+      </section>
+    </div>
+  `;
+
+  document.getElementById("quickNoteForm")?.addEventListener("submit", event => {
+    event.preventDefault();
+
+    const title = document.getElementById("quickNoteTitle").value.trim();
+    const body = document.getElementById("quickNoteBody").value.trim();
+    if (!title || !body) return;
+
+    notesData.notes.unshift({
+      id: makeId(title),
+      title,
+      body,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+
+    saveNotesData(notesData);
+    renderNotesPage();
+  });
+
+  document.getElementById("uploadNotesFileButton")?.addEventListener("click", () => {
+    notesFileInput.value = "";
+    notesFileInput.click();
+  });
+
+  tabContent.querySelectorAll("[data-edit-note]").forEach(button => {
+    button.addEventListener("click", () => {
+      const note = notesData.notes.find(item => item.id === button.dataset.editNote);
+      if (!note) return;
+
+      const title = window.prompt("Note title:", note.title);
+      if (title === null) return;
+
+      const body = window.prompt("Note:", note.body);
+      if (body === null) return;
+
+      if (!title.trim() || !body.trim()) return;
+
+      note.title = title.trim();
+      note.body = body.trim();
+      note.updatedAt = Date.now();
+      saveNotesData(notesData);
+      renderNotesPage();
+    });
+  });
+
+  tabContent.querySelectorAll("[data-delete-note]").forEach(button => {
+    button.addEventListener("click", () => {
+      const note = notesData.notes.find(item => item.id === button.dataset.deleteNote);
+      if (!note || !window.confirm(`Delete "${note.title}"?`)) return;
+
+      notesData.notes = notesData.notes.filter(item => item.id !== note.id);
+      saveNotesData(notesData);
+      renderNotesPage();
+    });
+  });
+
+  tabContent.querySelectorAll("[data-download-note-file]").forEach(button => {
+    button.addEventListener("click", () => {
+      const file = notesData.files.find(item => item.id === button.dataset.downloadNoteFile);
+      if (!file) return;
+      triggerDownload(file.dataUrl, file.fileName);
+    });
+  });
+
+  tabContent.querySelectorAll("[data-delete-note-file]").forEach(button => {
+    button.addEventListener("click", () => {
+      const file = notesData.files.find(item => item.id === button.dataset.deleteNoteFile);
+      if (!file || !window.confirm(`Delete "${file.name}"?`)) return;
+
+      notesData.files = notesData.files.filter(item => item.id !== file.id);
+      saveNotesData(notesData);
+      renderNotesPage();
+    });
+  });
+}
+
+notesFileInput?.addEventListener("change", async () => {
+  const notesData = loadNotesData();
+
+  try {
+    for (const file of Array.from(notesFileInput.files || [])) {
+      if (file.size > MAX_NOTES_FILE_SIZE) {
+        window.alert(`${file.name} is larger than 2 MB and was skipped.`);
+        continue;
+      }
+
+      notesData.files.push({
+        id: makeId(file.name),
+        name: file.name,
+        fileName: file.name,
+        type: file.type || "Document",
+        size: file.size,
+        dataUrl: await readFileAsDataUrl(file),
+        uploadedAt: Date.now()
+      });
+    }
+
+    saveNotesData(notesData);
+    if (activeView === "notes") renderNotesPage();
+  } catch (error) {
+    console.error("[NOTES] Upload failed:", error);
+    window.alert("One or more note files could not be uploaded.");
+  } finally {
+    notesFileInput.value = "";
+  }
+});
+
+/* Final nav wrapper: Notes is permanent and cannot be deleted. */
+const notesBaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationWithNotes() {
+  notesBaseRenderNavigation();
+
+  const existingNotes = Array.from(sidebarTabs.querySelectorAll(".tab-button"))
+    .find(button => button.querySelector(".tab-name")?.textContent?.trim() === "Notes");
+
+  if (!existingNotes) {
+    const notesButton = createNavigationButton({
+      label: "Notes",
+      mark: "TXT",
+      active: activeView === "notes",
+      onClick: () => switchView("notes")
+    });
+
+    const settingsButton = Array.from(sidebarTabs.querySelectorAll(".tab-button"))
+      .find(button => button.querySelector(".tab-name")?.textContent?.trim() === "Settings");
+
+    if (settingsButton) {
+      sidebarTabs.insertBefore(notesButton, settingsButton);
+    } else {
+      sidebarTabs.appendChild(notesButton);
+    }
+  }
+
+  const versionBadge = document.getElementById("appVersionBadge");
+  if (versionBadge) versionBadge.textContent = APP_VERSION;
+};
+
+const notesBaseRenderCurrentView = renderCurrentView;
+renderCurrentView = function renderCurrentViewWithNotes() {
+  if (activeView === "notes") {
+    renderNotesPage();
+    return;
+  }
+
+  notesBaseRenderCurrentView();
+};
+
+/* Prevent permanent Notes tab from showing delete controls. */
+const notesBaseSwitchView = switchView;
+switchView = function switchViewWithPermanentNotes(nextView) {
+  notesBaseSwitchView(nextView);
+
+  if (nextView === "notes") {
+    deleteTabButton.classList.add("hidden");
+    addFolderButton.classList.add("hidden");
+  }
 };

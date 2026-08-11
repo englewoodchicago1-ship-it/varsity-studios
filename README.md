@@ -394,3 +394,24 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Fixed the hidden profile-picture file input being placed after `script.js`.
 - The app script now loads after the file input exists, so the upload `change` event is actually attached.
 - This fixes selecting a picture and seeing no change.
+
+
+## Animation subfolders
+- The special Animations folder can now contain its own named folders.
+- Animations can be moved into any animation folder or left under `No folder`.
+- Create, rename, and delete animation folders.
+- Deleting an animation folder does not delete its animations; they move back to `No folder`.
+- Each animation has a folder selector, so existing animations can be reorganized at any time.
+- Animation folder structure saves with the user's Supabase-backed dashboard data.
+
+
+## v0.01 — Organizer / Notes update
+- Added nested folders inside Images/Icons.
+- Added nested folders inside Models.
+- Any normal folder can now upload files; it no longer needs a special folder name.
+- Normal-folder files can also be organized into nested file folders.
+- Added a permanent Notes tab that cannot be deleted.
+- Notes supports typed notes plus uploaded note/document files.
+- Notes and uploaded files save with the signed-in account through the existing Supabase-backed cloud snapshot.
+- Added a website version badge at the bottom. Current version: `v0.01`.
+- Future website updates should increment the version (`v0.02`, `v0.03`, etc.).
