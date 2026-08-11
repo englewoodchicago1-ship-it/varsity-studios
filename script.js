@@ -5779,7 +5779,7 @@ const tutorialSteps = [
     description: "This is your personal dashboard home. It summarizes what is inside your account and gives you fast access to the areas you use most.",
     why: "Every account has its own workspace data. Changes made while signed into this account stay attached to this account on this browser.",
     try: "Look at the welcome card and your account role. Owner accounts have full controls; Member accounts have a limited workspace.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "main",
@@ -5789,7 +5789,7 @@ const tutorialSteps = [
     description: "The left navigation moves between built-in Varsity tools and the custom categories you create for games, systems, assets, or planning.",
     why: "Keeping tools separated into clear categories makes larger Roblox projects easier to manage without losing files or notes.",
     try: "As the tutorial moves forward, watch this navigation automatically change pages so you can see where each tool lives.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "main",
@@ -5799,7 +5799,7 @@ const tutorialSteps = [
     description: "These shortcuts jump directly to common areas and recent workspaces without searching through every category.",
     why: "As your dashboard grows, shortcuts reduce the number of clicks needed to reach the things you use every day.",
     try: "After the tutorial, use these cards to jump directly to websites or a custom tab.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "developer",
@@ -5809,7 +5809,7 @@ const tutorialSteps = [
     description: "Projects, tasks, Roblox IDs, and Luau snippets live here. Use it to track what is being built and keep technical information organized.",
     why: "Roblox development often spreads IDs, scripts, tasks, and project notes across different apps. This page keeps the important pieces together.",
     try: "Create a project, add a task, save a useful Roblox ID, or store a code snippet you reuse often.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "systems",
@@ -5819,7 +5819,7 @@ const tutorialSteps = [
     description: "Track settings, remotes, DataStores, and other systems used by your Roblox experiences.",
     why: "When a project becomes large, knowing which remotes and DataStores exist prevents duplicate systems and naming confusion.",
     try: "Use this area as a living technical reference for your game instead of relying on memory.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "releases",
@@ -5829,7 +5829,7 @@ const tutorialSteps = [
     description: "Plan versions, target dates, testing stages, release statuses, notes, fixes, and upcoming features.",
     why: "A release tracker makes it clear what is ready, what still needs testing, and what belongs in the next update.",
     try: "Create a release for your next game update and add the features or fixes that belong to it.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "team",
@@ -5839,7 +5839,7 @@ const tutorialSteps = [
     description: "Save Roblox usernames, roles, responsibilities, and access information for the people working with Varsity Studios.",
     why: "A clear team directory helps prevent confusion when multiple people are building, scripting, testing, designing, or animating.",
     try: "Add a team member and describe exactly what they are responsible for.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "websites",
@@ -5849,7 +5849,7 @@ const tutorialSteps = [
     description: "Keep frequently used websites in one place so the dashboard also acts as your development launchpad.",
     why: "You do not need to remember or repeatedly search for the same dashboards, playlists, documents, or tools.",
     try: "Open a saved link or add useful resources to folders using Quick Links.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "first-custom-tab",
@@ -5859,7 +5859,7 @@ const tutorialSteps = [
     description: "Create categories for individual games, departments, development areas, assets, or anything else you want separated.",
     why: "Tabs stop one giant dashboard from becoming cluttered. Each tab becomes its own workspace with folders underneath it.",
     try: "Create tabs such as FOOTBALL, UI DESIGN, GAME SYSTEMS, ANIMATIONS, or a specific game name.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "first-custom-tab",
@@ -5869,7 +5869,7 @@ const tutorialSteps = [
     description: "Folders can contain notes, checklists, links, custom fields, priorities, progress, models, images, animation IDs, and activity history.",
     why: "This is where the list layout becomes powerful: you can scan many organized folders without oversized cards filling the screen.",
     try: "Create a folder, open it, set its status and priority, then add a checklist or useful link.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "settings",
@@ -5879,7 +5879,7 @@ const tutorialSteps = [
     description: "Owners can change the dashboard colorway, UI version, motion system, navigation position, layout density, and advanced visual options.",
     why: "These settings affect how your own account feels without forcing every user to use the same layout.",
     try: "Try Glass, Basic, Studio 3D, Neon, or Slate. You can also move horizontal tabs to the top or bottom.",
-    roles: ["Owner"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "settings",
@@ -5889,7 +5889,7 @@ const tutorialSteps = [
     description: "Choose full motion presets or individually control page transitions, card effects, navigation animation, modal entrances, parallax, and pointer effects.",
     why: "Instead of a single animation speed toggle, you can make the dashboard feel cinematic, energetic, futuristic, or minimal.",
     try: "Start with a preset, then customize individual effects until the dashboard feels right.",
-    roles: ["Owner"]
+    roles: ["Owner", "Member", "User"]
   },
   {
     view: "settings",
@@ -5909,7 +5909,7 @@ const tutorialSteps = [
     description: "You now know where the major Varsity Studios tools live and how the dashboard is organized.",
     why: "You can restart this walkthrough at any time instead of trying to remember every feature.",
     try: "Start building your workspace. The best first step is creating a custom tab and a few well-named folders.",
-    roles: ["Owner", "Member"]
+    roles: ["Owner", "Member", "User"]
   }
 ];
 
@@ -7102,10 +7102,6 @@ function updateSignedInIdentity() {
 
 const roleBaseRenderNavigation = renderNavigation;
 renderNavigation = function renderNavigationWithRoles() {
-  if (currentUser?.role === "Member" && activeView === "settings") {
-    activeView = "main";
-  }
-
   roleBaseRenderNavigation();
   updateSignedInIdentity();
   applyRolePermissions();
@@ -7117,16 +7113,9 @@ function applyRolePermissions() {
 
   const isOwner = hasOwnerAccess();
 
-  Array.from(sidebarTabs.querySelectorAll(".tab-button")).forEach(button => {
-    const name = button.querySelector(".tab-name")?.textContent?.trim();
-    if (!isOwner && name === "Settings") {
-      button.remove();
-    }
-  });
-
-  if (!isOwner) {
-    deleteTabButton.classList.add("hidden");
-  }
+  // Members and Users can access their own personal Settings
+  // and can delete content that belongs to their own account.
+  deleteTabButton.classList.remove("hidden");
 
   document.querySelectorAll("[data-owner-only]").forEach(element => {
     element.classList.toggle("hidden", !isOwner);
@@ -7146,23 +7135,23 @@ renderMainDashboard = function renderMainDashboardByAccount() {
     if (paragraph) {
       paragraph.textContent = user.role === "Owner"
         ? "Full owner access is active. Manage projects, settings, folders, assets, releases, team information, and your personal workspace."
-        : "Your member workspace is active. Your tabs, folders, files, projects, and dashboard data stay separate from other accounts on this browser.";
+        : "Your workspace is active. You can manage your own tabs, folders, files, projects, tutorial, and personal dashboard settings. Your cloud data stays tied to your account.";
     }
   }
 };
 
 const accountBaseRenderSettingsPage = renderSettingsPage;
 renderSettingsPage = function renderSettingsPageWithAccountPanel() {
-  if (!hasOwnerAccess()) {
-    activeView = "main";
-    renderNavigation();
-    return;
-  }
-
   accountBaseRenderSettingsPage();
 
   const settingsPage = tabContent.querySelector(".settings-page");
   if (!settingsPage) return;
+
+  // Account management is Owner-only, but all users can edit
+  // their own dashboard appearance/settings.
+  if (!hasOwnerAccess()) {
+    return;
+  }
 
   const panel = document.createElement("section");
   panel.className = "settings-panel account-management-panel";
@@ -7172,7 +7161,7 @@ renderSettingsPage = function renderSettingsPageWithAccountPanel() {
       <div>
         <span class="dashboard-kicker">ACCOUNT ACCESS</span>
         <h3>Varsity Studios accounts</h3>
-        <p>Owner accounts have full dashboard control. Member accounts receive their own workspace and cannot open owner-only settings.</p>
+        <p>Everyone can manage their own workspace and personal settings. Owner access additionally includes account-management controls.</p>
       </div>
     </div>
 
@@ -7301,3 +7290,229 @@ loginView.classList.remove("hidden");
 dashboardView.classList.add("hidden");
 dashboardView.setAttribute("aria-hidden", "true");
 loginView.setAttribute("aria-hidden", "false");
+
+
+/* Folder file uploads + folder rename management */
+function normalizeFolderFiles(folder) {
+  if (!folder || typeof folder !== "object") return folder;
+  if (!Array.isArray(folder.files)) folder.files = [];
+  return folder;
+}
+
+function getActiveCustomTab() {
+  return tabs.find(tab => tab.id === activeView && tab.custom);
+}
+
+function findFolderById(folderId) {
+  const tab = getActiveCustomTab();
+  if (!tab || !Array.isArray(tab.folders)) return null;
+  return tab.folders.find(folder => folder.id === folderId) || null;
+}
+
+function persistTabsAndRefresh() {
+  saveTabs();
+  renderNavigation();
+}
+
+function formatUploadedFileSize(bytes) {
+  if (!Number.isFinite(bytes)) return "Unknown size";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let index = 0;
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index += 1;
+  }
+  return `${value >= 10 || index === 0 ? value.toFixed(0) : value.toFixed(1)} ${units[index]}`;
+}
+
+async function uploadFileIntoFolder(folderId, file) {
+  const folder = normalizeFolderFiles(findFolderById(folderId));
+  if (!folder || !file) return;
+
+  const reader = new FileReader();
+  const dataUrl = await new Promise((resolve, reject) => {
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error("File read failed"));
+    reader.readAsDataURL(file);
+  });
+
+  folder.files.unshift({
+    id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name: file.name,
+    originalName: file.name,
+    type: file.type || "application/octet-stream",
+    size: file.size || 0,
+    dataUrl,
+    addedAt: new Date().toISOString()
+  });
+
+  saveTabs();
+  scheduleCloudSave();
+  renderAdvancedFolderWorkspace(folder.id);
+}
+
+function renameFolder(folderId) {
+  const folder = findFolderById(folderId);
+  if (!folder) return;
+
+  const nextName = window.prompt("Folder name", folder.name || "Untitled Folder");
+  if (nextName === null) return;
+
+  const cleanName = nextName.trim();
+  if (!cleanName) return;
+
+  folder.name = cleanName;
+  saveTabs();
+  scheduleCloudSave();
+  renderAdvancedFolderWorkspace(folder.id);
+  renderNavigation();
+}
+
+function renameFolderFile(folderId, fileId) {
+  const folder = normalizeFolderFiles(findFolderById(folderId));
+  if (!folder) return;
+
+  const file = folder.files.find(item => item.id === fileId);
+  if (!file) return;
+
+  const nextName = window.prompt("File name", file.name);
+  if (nextName === null) return;
+
+  const cleanName = nextName.trim();
+  if (!cleanName) return;
+
+  file.name = cleanName;
+  saveTabs();
+  scheduleCloudSave();
+  renderAdvancedFolderWorkspace(folder.id);
+}
+
+function deleteFolderFile(folderId, fileId) {
+  const folder = normalizeFolderFiles(findFolderById(folderId));
+  if (!folder) return;
+
+  const file = folder.files.find(item => item.id === fileId);
+  if (!file) return;
+
+  const confirmed = window.confirm(`Delete “${file.name}”?`);
+  if (!confirmed) return;
+
+  folder.files = folder.files.filter(item => item.id !== fileId);
+  saveTabs();
+  scheduleCloudSave();
+  renderAdvancedFolderWorkspace(folder.id);
+}
+
+function downloadFolderFile(folderId, fileId) {
+  const folder = normalizeFolderFiles(findFolderById(folderId));
+  if (!folder) return;
+
+  const file = folder.files.find(item => item.id === fileId);
+  if (!file?.dataUrl) return;
+
+  const anchor = document.createElement("a");
+  anchor.href = file.dataUrl;
+  anchor.download = file.name || file.originalName || "download";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+}
+
+function buildFolderFileManager(folder) {
+  normalizeFolderFiles(folder);
+
+  const rows = folder.files.length
+    ? folder.files.map(file => `
+      <article class="folder-file-row">
+        <div class="folder-file-icon">FILE</div>
+        <div class="folder-file-copy">
+          <strong title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</strong>
+          <small>${escapeHtml(file.type || "File")} • ${formatUploadedFileSize(file.size)} • ${new Date(file.addedAt).toLocaleString()}</small>
+        </div>
+        <div class="folder-file-actions">
+          <button class="secondary-button compact" type="button" data-folder-file-rename="${file.id}">Rename</button>
+          <button class="secondary-button compact" type="button" data-folder-file-download="${file.id}">Download</button>
+          <button class="danger-button compact" type="button" data-folder-file-delete="${file.id}">Delete</button>
+        </div>
+      </article>
+    `).join("")
+    : `<div class="folder-empty-state compact-empty">No uploaded files yet.</div>`;
+
+  return `
+    <section class="folder-detail-section folder-file-manager">
+      <div class="folder-section-heading">
+        <div>
+          <span class="dashboard-kicker">FILES</span>
+          <h3>Folder files</h3>
+          <p>Upload files directly into this folder, rename them, download them, or delete them.</p>
+        </div>
+        <label class="primary-button compact folder-upload-button">
+          + Upload file
+          <input type="file" data-folder-file-input hidden multiple />
+        </label>
+      </div>
+      <div class="folder-file-list">${rows}</div>
+    </section>
+  `;
+}
+
+function attachFolderFileManager(folder) {
+  const input = tabContent.querySelector("[data-folder-file-input]");
+  if (input) {
+    input.addEventListener("change", async event => {
+      const files = Array.from(event.target.files || []);
+      for (const file of files) {
+        await uploadFileIntoFolder(folder.id, file);
+      }
+      event.target.value = "";
+    });
+  }
+
+  tabContent.querySelectorAll("[data-folder-file-rename]").forEach(button => {
+    button.addEventListener("click", () => renameFolderFile(folder.id, button.dataset.folderFileRename));
+  });
+
+  tabContent.querySelectorAll("[data-folder-file-download]").forEach(button => {
+    button.addEventListener("click", () => downloadFolderFile(folder.id, button.dataset.folderFileDownload));
+  });
+
+  tabContent.querySelectorAll("[data-folder-file-delete]").forEach(button => {
+    button.addEventListener("click", () => deleteFolderFile(folder.id, button.dataset.folderFileDelete));
+  });
+
+  const renameButton = tabContent.querySelector("[data-rename-current-folder]");
+  if (renameButton) {
+    renameButton.addEventListener("click", () => renameFolder(folder.id));
+  }
+}
+
+const folderWorkspaceRenderer = typeof renderAdvancedFolderWorkspace === "function"
+  ? renderAdvancedFolderWorkspace
+  : null;
+
+if (folderWorkspaceRenderer) {
+  renderAdvancedFolderWorkspace = function renderAdvancedFolderWorkspaceWithFiles(folderId) {
+    folderWorkspaceRenderer(folderId);
+
+    const folder = normalizeFolderFiles(findFolderById(folderId));
+    if (!folder) return;
+
+    const workspace = tabContent.querySelector(".advanced-folder-workspace, .folder-detail-page, .folder-workspace, .folder-management-page") || tabContent;
+    if (!workspace) return;
+
+    const headerActions = workspace.querySelector(".folder-detail-actions, .content-actions, .folder-management-heading-actions");
+    if (headerActions && !headerActions.querySelector("[data-rename-current-folder]")) {
+      const renameButton = document.createElement("button");
+      renameButton.type = "button";
+      renameButton.className = "secondary-button compact";
+      renameButton.dataset.renameCurrentFolder = "true";
+      renameButton.textContent = "Rename folder";
+      headerActions.prepend(renameButton);
+    }
+
+    const managerMarkup = buildFolderFileManager(folder);
+    workspace.insertAdjacentHTML("beforeend", managerMarkup);
+    attachFolderFileManager(folder);
+  };
+}

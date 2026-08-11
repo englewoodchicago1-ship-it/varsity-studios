@@ -7905,3 +7905,120 @@ body[data-theme-mode="light"] .topbar-account {
   line-height: 1.45;
   text-align: center;
 }
+
+
+/* Folder file uploads + rename controls */
+.folder-file-manager {
+  margin-top: 16px;
+}
+
+.folder-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.folder-section-heading h3 {
+  margin: 3px 0 0;
+}
+
+.folder-section-heading p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.folder-upload-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.folder-file-list {
+  display: grid;
+  gap: 7px;
+}
+
+.folder-file-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.025);
+}
+
+.folder-file-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--red-bright);
+  background: color-mix(in srgb, var(--red-bright) 8%, transparent);
+  font-size: 0.52rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.folder-file-copy {
+  min-width: 0;
+}
+
+.folder-file-copy strong,
+.folder-file-copy small {
+  display: block;
+}
+
+.folder-file-copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.72rem;
+}
+
+.folder-file-copy small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.61rem;
+}
+
+.folder-file-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.compact-empty {
+  padding: 18px !important;
+}
+
+@media (max-width: 760px) {
+  .folder-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .folder-upload-button {
+    width: 100%;
+  }
+
+  .folder-file-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .folder-file-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .folder-file-actions button {
+    width: 100%;
+  }
+}

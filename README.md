@@ -323,3 +323,20 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - The publishable key in frontend code is expected; never place a secret/service-role key in this repository.
 - Login sessions intentionally do not persist through a full page refresh, preserving the dashboard's re-login-on-refresh behavior.
 - Current username-to-auth-email routing still exists in frontend code. Hiding account identifiers as well requires moving username resolution to a server-side Supabase Edge Function.
+
+
+## Member permission update
+- Members can run and restart the guided tutorial.
+- Members can open Settings and change their own dashboard appearance, layout, motion, navigation, and personal preferences.
+- Members can delete their own tabs, folders, and other content stored under their own Supabase account.
+- Owner-only account-management controls remain restricted to the Owner.
+- The same personal permissions also apply to normal User accounts such as Neco.
+
+
+## Folder file uploads and renaming
+- Users can upload one or multiple files directly into any custom folder.
+- Uploaded files are stored with that account's dashboard data and sync through the existing Supabase dashboard cloud save.
+- Folder names can be changed from inside the folder workspace.
+- Uploaded files can be renamed, downloaded, or deleted.
+- File metadata shows type, size, and upload time.
+- Mobile folder file management uses a responsive stacked layout.
