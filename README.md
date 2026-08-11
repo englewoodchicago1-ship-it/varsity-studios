@@ -388,3 +388,9 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Added explicit save verification and visible errors.
 - Reduced avatar size to 256×256 before saving to keep account/cloud storage lightweight.
 - Cloud snapshot is pushed immediately after a successful profile-picture change.
+
+
+## Profile picture file-input binding fix
+- Fixed the hidden profile-picture file input being placed after `script.js`.
+- The app script now loads after the file input exists, so the upload `change` event is actually attached.
+- This fixes selecting a picture and seeing no change.
