@@ -8025,24 +8025,6 @@ body[data-theme-mode="light"] .topbar-account {
 
 
 /* Profile picture + member navigation update */
-.topbar-profile-picture-button {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: rgba(255,255,255,0.025);
-  cursor: pointer;
-}
-
-.topbar-profile-picture-button:hover {
-  border-color: color-mix(in srgb, var(--red-bright) 42%, var(--border));
-}
-
 .profile-avatar {
   width: 100%;
   height: 100%;
@@ -8110,12 +8092,6 @@ body[data-theme-mode="light"] .topbar-account {
 }
 
 @media (max-width: 860px) {
-  .topbar-profile-picture-button {
-    width: 34px;
-    height: 34px;
-    flex-basis: 34px;
-    border-radius: 9px;
-  }
 
   .profile-picture-settings-content {
     grid-template-columns: 1fr;

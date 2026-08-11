@@ -7628,10 +7628,6 @@ if (profilePictureFileInput) {
   });
 }
 
-const topbarProfilePictureButton = document.getElementById("topbarProfilePictureButton");
-if (topbarProfilePictureButton) {
-  topbarProfilePictureButton.addEventListener("click", openProfilePicturePicker);
-}
 
 const profileBaseUpdateSignedInIdentity = updateSignedInIdentity;
 updateSignedInIdentity = function updateSignedInIdentityWithPicture() {
@@ -7717,7 +7713,7 @@ renderSettingsPage = function renderSettingsPageWithProfilePicture() {
       <div>
         <span class="dashboard-kicker">YOUR PROFILE</span>
         <h3>Profile picture</h3>
-        <p>Choose an image from your device. It follows your account through the Varsity Studios cloud save.</p>
+        <p>Upload or change your profile picture here from a file on your device. The Varsity Studios logo is only the default fallback when you have no custom picture.</p>
       </div>
     </div>
 
@@ -7734,7 +7730,7 @@ renderSettingsPage = function renderSettingsPageWithProfilePicture() {
 
         <div class="profile-picture-settings-actions">
           <button id="changeProfilePictureButton" class="primary-button compact" type="button">
-            ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Change picture" : "Upload picture"}
+            ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Change profile picture" : "Upload profile picture"}
           </button>
 
           <button id="removeProfilePictureButton" class="secondary-button compact" type="button">

@@ -350,3 +350,9 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - The Varsity Studios logo is the fallback/template picture when no custom profile picture is set.
 - Users can return to the Varsity Studios logo from Settings at any time.
 - Profile-picture state is stored in the account cloud snapshot and follows the same Supabase user across devices.
+
+
+## Profile picture cleanup
+- Removed the large/clickable profile image from the top-right header.
+- Profile picture upload/change now lives only in Settings → Your Profile → Profile picture.
+- The Varsity Studios logo remains only as the fallback/default picture when no custom image is set.
