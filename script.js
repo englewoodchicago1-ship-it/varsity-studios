@@ -8315,7 +8315,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.06";
+const APP_VERSION = "v0.07";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -9669,3 +9669,408 @@ try {
 } catch (error) {
   console.warn("[v0.06] Initial customization sync deferred.", error);
 }
+
+
+/* =========================================================
+   v0.07 ACCOUNT + UI CONTROLS
+   ========================================================= */
+
+const UI_PERSONALIZATION_KEY = "varsityUiPersonalizationV1";
+const FONT_OPTIONS = {
+  system: {
+    name: "System",
+    stack: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  },
+  modern: {
+    name: "Modern",
+    stack: '"Trebuchet MS", "Segoe UI", Arial, sans-serif'
+  },
+  clean: {
+    name: "Clean",
+    stack: 'Arial, Helvetica, sans-serif'
+  },
+  classic: {
+    name: "Classic",
+    stack: 'Georgia, "Times New Roman", serif'
+  },
+  mono: {
+    name: "Developer",
+    stack: '"Cascadia Code", "Consolas", "Courier New", monospace'
+  }
+};
+
+function loadUiPersonalization() {
+  try {
+    return {
+      font: "system",
+      tabScale: 100,
+      contentScale: 100,
+      ...JSON.parse(accountStorageGet(UI_PERSONALIZATION_KEY) || "{}")
+    };
+  } catch {
+    return { font: "system", tabScale: 100, contentScale: 100 };
+  }
+}
+
+let uiPersonalization = loadUiPersonalization();
+
+function saveUiPersonalization() {
+  accountStorageSet(UI_PERSONALIZATION_KEY, JSON.stringify(uiPersonalization));
+  scheduleCloudSave();
+}
+
+function applyUiPersonalization() {
+  const font = FONT_OPTIONS[uiPersonalization.font] || FONT_OPTIONS.system;
+  document.documentElement.style.setProperty("--user-font-family", font.stack);
+  document.documentElement.style.setProperty("--user-tab-scale", String((Number(uiPersonalization.tabScale) || 100) / 100));
+  document.documentElement.style.setProperty("--user-content-scale", String((Number(uiPersonalization.contentScale) || 100) / 100));
+  document.body.dataset.userFont = uiPersonalization.font;
+}
+
+function syncAllAccountAvatars() {
+  if (!currentUser) return;
+
+  const source = getSavedProfilePicture();
+  const displayName = getSignedInUser().displayName;
+
+  const targets = new Set([
+    ...document.querySelectorAll("[data-profile-avatar]"),
+    ...document.querySelectorAll("#signedInBrandLogo"),
+    ...document.querySelectorAll(".welcome-panel > img")
+  ]);
+
+  targets.forEach(image => {
+    if (!(image instanceof HTMLImageElement)) return;
+    image.src = source;
+    image.alt = `${displayName} profile picture`;
+    image.classList.add("account-profile-image");
+  });
+}
+
+/* Make PFP synchronization robust even when dashboard content rerenders. */
+const v007BaseUpdateProfilePictureUI = updateProfilePictureUI;
+updateProfilePictureUI = function updateProfilePictureUIV007() {
+  v007BaseUpdateProfilePictureUI();
+  syncAllAccountAvatars();
+};
+
+const v007AvatarObserver = new MutationObserver(() => {
+  if (currentUser && !dashboardView.classList.contains("hidden")) {
+    syncAllAccountAvatars();
+  }
+});
+
+v007AvatarObserver.observe(dashboardView, { childList: true, subtree: true });
+
+/* ---------------- SEARCH ---------------- */
+
+const dashboardSearchDialog = document.getElementById("dashboardSearchDialog");
+const dashboardSearchInput = document.getElementById("dashboardSearchInput");
+const dashboardSearchResults = document.getElementById("dashboardSearchResults");
+
+function collectDashboardSearchItems() {
+  const items = [
+    { title: "Dashboard", subtitle: "Main overview", kind: "Page", view: "main", icon: "⌂" },
+    { title: "Settings", subtitle: "Appearance and account settings", kind: "Page", view: "settings", icon: "⚙" },
+    { title: "Notes", subtitle: "Saved notes and documents", kind: "Page", view: "notes", icon: "TXT" },
+    { title: "Game Systems", subtitle: "Game system registry", kind: "Page", view: "systems", icon: "SYS" }
+  ];
+
+  if (!isRestrictedNonOwner()) {
+    items.push(
+      { title: "Global Websites", subtitle: "Saved website shortcuts", kind: "Page", view: "websites", icon: "◎" },
+      { title: "Developer Hub", subtitle: "Projects, tasks, IDs, snippets", kind: "Page", view: "developer", icon: "</>" },
+      { title: "Team", subtitle: "Varsity Studios team", kind: "Page", view: "team", icon: "USR" },
+      { title: "Releases", subtitle: "Release tracking", kind: "Page", view: "releases", icon: "VER" }
+    );
+  }
+
+  tabs.forEach(tab => {
+    items.push({
+      title: tab.name,
+      subtitle: tab.description || "Custom tab",
+      kind: "Tab",
+      view: `tab:${tab.id}`,
+      icon: "TAB"
+    });
+
+    (tab.folders || []).forEach(folder => {
+      items.push({
+        title: folder.name,
+        subtitle: `${tab.name} • ${folder.description || "Folder"}`,
+        kind: "Folder",
+        view: `folder:${tab.id}:${folder.id}`,
+        icon: "DIR"
+      });
+    });
+  });
+
+  const notes = loadNotesData?.();
+  (notes?.notes || []).forEach(note => {
+    items.push({
+      title: note.title,
+      subtitle: note.body.slice(0, 110),
+      kind: "Note",
+      view: "notes",
+      icon: "TXT"
+    });
+  });
+
+  return items;
+}
+
+function renderDashboardSearchResults(query = "") {
+  const normalized = query.trim().toLowerCase();
+  const items = collectDashboardSearchItems()
+    .filter(item => !normalized || `${item.title} ${item.subtitle} ${item.kind}`.toLowerCase().includes(normalized))
+    .slice(0, 30);
+
+  dashboardSearchResults.innerHTML = items.length
+    ? items.map((item, index) => `
+        <button class="dashboard-search-result" type="button" data-search-view="${escapeAttribute(item.view)}">
+          <span class="dashboard-search-result-icon">${escapeHtml(item.icon)}</span>
+          <span class="dashboard-search-result-copy">
+            <strong>${escapeHtml(item.title)}</strong>
+            <small>${escapeHtml(item.subtitle)}</small>
+          </span>
+          <em>${escapeHtml(item.kind)}</em>
+        </button>
+      `).join("")
+    : `<div class="dashboard-search-empty">No results found.</div>`;
+
+  dashboardSearchResults.querySelectorAll("[data-search-view]").forEach(button => {
+    button.addEventListener("click", () => {
+      dashboardSearchDialog.close();
+      switchView(button.dataset.searchView);
+    });
+  });
+}
+
+function openDashboardSearch() {
+  if (!currentUser) return;
+  renderDashboardSearchResults("");
+  dashboardSearchInput.value = "";
+  dashboardSearchDialog.showModal();
+  setTimeout(() => dashboardSearchInput.focus(), 0);
+}
+
+document.getElementById("dashboardSearchButton")?.addEventListener("click", openDashboardSearch);
+document.getElementById("closeDashboardSearchButton")?.addEventListener("click", () => dashboardSearchDialog.close());
+
+dashboardSearchInput?.addEventListener("input", () => {
+  renderDashboardSearchResults(dashboardSearchInput.value);
+});
+
+document.addEventListener("keydown", event => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k" && currentUser) {
+    event.preventDefault();
+    openDashboardSearch();
+  }
+});
+
+/* ---------------- SETTINGS: FONT / SIZE / ACCOUNTS / PASSWORD ---------------- */
+
+function renderAccountDirectoryRows() {
+  const knownAccounts = [
+    { username: "ykdrxc", displayName: "Drxco", role: "Owner" },
+    { username: "rundownbjay", displayName: "Bj", role: "Member" },
+    { username: "neco", displayName: "Neco", role: "User" }
+  ];
+
+  return knownAccounts.map(account => `
+    <article class="account-directory-row ${account.username === currentUser?.username ? "current" : ""}">
+      <div class="account-directory-avatar">${escapeHtml(account.displayName.slice(0, 1).toUpperCase())}</div>
+      <div class="account-directory-copy">
+        <strong>${escapeHtml(account.displayName)}</strong>
+        <small>@${escapeHtml(account.username)}</small>
+      </div>
+      <span class="account-directory-role">${escapeHtml(account.role)}</span>
+      ${account.username === currentUser?.username ? '<em>YOU</em>' : ""}
+    </article>
+  `).join("");
+}
+
+const v007BaseRenderSettingsPage = renderSettingsPage;
+renderSettingsPage = function renderSettingsPageV007() {
+  v007BaseRenderSettingsPage();
+
+  const settingsPage = tabContent.querySelector(".settings-page");
+  if (!settingsPage || settingsPage.querySelector(".ui-personalization-v007")) {
+    applyUiPersonalization();
+    syncAllAccountAvatars();
+    return;
+  }
+
+  const personalizationPanel = document.createElement("section");
+  personalizationPanel.className = "settings-panel ui-personalization-v007";
+  personalizationPanel.innerHTML = `
+    <div class="settings-heading">
+      <div>
+        <span class="dashboard-kicker">INTERFACE</span>
+        <h3>Font and sizing</h3>
+        <p>Change the dashboard font and control how large navigation tabs and main content appear.</p>
+      </div>
+    </div>
+
+    <div class="v007-setting-list">
+      <label class="v007-setting-row">
+        <span>
+          <strong>Dashboard font</strong>
+          <small>Changes text across your signed-in dashboard.</small>
+        </span>
+        <select id="dashboardFontSelect">
+          ${Object.entries(FONT_OPTIONS).map(([id, option]) => `
+            <option value="${id}" ${uiPersonalization.font === id ? "selected" : ""}>${escapeHtml(option.name)}</option>
+          `).join("")}
+        </select>
+      </label>
+
+      <label class="v007-slider-row">
+        <span>
+          <strong>Navigation tab size</strong>
+          <small>Resize the tabs at the top/side of the dashboard.</small>
+        </span>
+        <div>
+          <input id="dashboardTabSize" type="range" min="75" max="140" step="5" value="${uiPersonalization.tabScale}" />
+          <output id="dashboardTabSizeValue">${uiPersonalization.tabScale}%</output>
+        </div>
+      </label>
+
+      <label class="v007-slider-row">
+        <span>
+          <strong>Main interface size</strong>
+          <small>Resize page headings, panels, cards, folders, and main workspace controls.</small>
+        </span>
+        <div>
+          <input id="dashboardContentSize" type="range" min="80" max="125" step="5" value="${uiPersonalization.contentScale}" />
+          <output id="dashboardContentSizeValue">${uiPersonalization.contentScale}%</output>
+        </div>
+      </label>
+    </div>
+  `;
+
+  const accountPanel = document.createElement("section");
+  accountPanel.className = "settings-panel account-directory-panel";
+  accountPanel.innerHTML = `
+    <div class="settings-heading">
+      <div>
+        <span class="dashboard-kicker">ACCOUNTS</span>
+        <h3>Varsity Studios accounts</h3>
+        <p>See the dashboard accounts and roles. Passwords are never displayed here.</p>
+      </div>
+    </div>
+    <div class="account-directory-list">
+      ${renderAccountDirectoryRows()}
+    </div>
+  `;
+
+  const passwordPanel = document.createElement("section");
+  passwordPanel.className = "settings-panel password-change-panel";
+  passwordPanel.innerHTML = `
+    <div class="settings-heading">
+      <div>
+        <span class="dashboard-kicker">SECURITY</span>
+        <h3>Change your password</h3>
+        <p>Updates the password for the Supabase account you are currently signed into.</p>
+      </div>
+    </div>
+
+    <form id="changePasswordForm" class="change-password-form">
+      <label>
+        <span>New password</span>
+        <input id="newAccountPassword" type="password" minlength="8" autocomplete="new-password" required />
+      </label>
+
+      <label>
+        <span>Confirm new password</span>
+        <input id="confirmAccountPassword" type="password" minlength="8" autocomplete="new-password" required />
+      </label>
+
+      <p id="changePasswordStatus" class="form-error" aria-live="polite"></p>
+      <button class="primary-button compact" type="submit">Change password</button>
+    </form>
+  `;
+
+  settingsPage.insertBefore(passwordPanel, settingsPage.firstElementChild);
+  settingsPage.insertBefore(accountPanel, settingsPage.firstElementChild);
+  settingsPage.insertBefore(personalizationPanel, settingsPage.firstElementChild);
+
+  const fontSelect = personalizationPanel.querySelector("#dashboardFontSelect");
+  const tabSize = personalizationPanel.querySelector("#dashboardTabSize");
+  const tabSizeValue = personalizationPanel.querySelector("#dashboardTabSizeValue");
+  const contentSize = personalizationPanel.querySelector("#dashboardContentSize");
+  const contentSizeValue = personalizationPanel.querySelector("#dashboardContentSizeValue");
+
+  fontSelect?.addEventListener("change", () => {
+    uiPersonalization.font = fontSelect.value;
+    saveUiPersonalization();
+    applyUiPersonalization();
+  });
+
+  tabSize?.addEventListener("input", () => {
+    uiPersonalization.tabScale = Number(tabSize.value);
+    if (tabSizeValue) tabSizeValue.textContent = `${uiPersonalization.tabScale}%`;
+    saveUiPersonalization();
+    applyUiPersonalization();
+  });
+
+  contentSize?.addEventListener("input", () => {
+    uiPersonalization.contentScale = Number(contentSize.value);
+    if (contentSizeValue) contentSizeValue.textContent = `${uiPersonalization.contentScale}%`;
+    saveUiPersonalization();
+    applyUiPersonalization();
+  });
+
+  passwordPanel.querySelector("#changePasswordForm")?.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const password = passwordPanel.querySelector("#newAccountPassword").value;
+    const confirm = passwordPanel.querySelector("#confirmAccountPassword").value;
+    const status = passwordPanel.querySelector("#changePasswordStatus");
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+
+    status.classList.remove("success");
+
+    if (password.length < 8) {
+      status.textContent = "Password must be at least 8 characters.";
+      return;
+    }
+
+    if (password !== confirm) {
+      status.textContent = "The two passwords do not match.";
+      return;
+    }
+
+    try {
+      button.disabled = true;
+      button.textContent = "Updating...";
+      status.textContent = "";
+
+      const { error } = await supabaseClient.auth.updateUser({ password });
+      if (error) throw error;
+
+      status.textContent = "Password changed successfully.";
+      status.classList.add("success");
+      event.currentTarget.reset();
+    } catch (error) {
+      console.error("[AUTH] Password update failed:", error);
+      status.textContent = error.message || "Could not change your password.";
+    } finally {
+      button.disabled = false;
+      button.textContent = "Change password";
+    }
+  });
+
+  applyUiPersonalization();
+  syncAllAccountAvatars();
+};
+
+/* Apply personal UI after login and whenever nav rerenders. */
+const v007BaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationV007() {
+  v007BaseRenderNavigation();
+  applyUiPersonalization();
+  syncAllAccountAvatars();
+};
+
+applyUiPersonalization();

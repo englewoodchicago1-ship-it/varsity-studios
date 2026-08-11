@@ -461,3 +461,14 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Added a Background Color Wheel in Settings with a custom background toggle.
 - Custom background and folder icons save with the account's existing Supabase-backed dashboard state.
 - Current version: `v0.06`.
+
+
+## v0.07 — Account + UI controls
+- Strengthened profile-picture syncing: the signed-in top-left image, welcome card image, and all profile-avatar locations use the same saved account PFP.
+- Added a dashboard search button and Ctrl/Cmd+K search for pages, custom tabs, folders, and notes.
+- Added dashboard font selection.
+- Added navigation tab-size control.
+- Added main-interface-size control.
+- Added an account directory showing Drxco, Bj, and Neco with roles (no passwords).
+- Added authenticated password changing through Supabase `auth.updateUser`.
+- Current build: `v0.07`.
