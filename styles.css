@@ -8811,3 +8811,210 @@ body.auth-locked #loginView,
     border-radius: 14px !important;
   }
 }
+
+
+/* v0.06 signed-in PFP / custom folders / centered dialogs / color wheel */
+.signed-in-profile-logo {
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: 9px !important;
+}
+
+body.custom-background-enabled {
+  background:
+    radial-gradient(circle at 78% 12%, color-mix(in srgb, var(--custom-page-background) 72%, transparent), transparent 38%),
+    linear-gradient(180deg, var(--custom-page-background), color-mix(in srgb, var(--custom-page-background) 42%, #030406 58%) 48%, #030406 100%) !important;
+}
+
+.organizer-folder-dialog,
+.folder-icon-dialog {
+  width: min(560px, calc(100vw - 28px));
+  max-width: 560px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.organizer-folder-dialog::backdrop,
+.folder-icon-dialog::backdrop {
+  background: rgba(0,0,0,0.68);
+  backdrop-filter: blur(8px);
+}
+
+.organizer-folder-dialog-card {
+  width: 100%;
+  margin: 0;
+}
+
+.organizer-icon-editor {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: rgba(255,255,255,0.022);
+}
+
+.organizer-icon-preview,
+.custom-folder-icon {
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--red-bright) 22%, var(--border));
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--red-bright) 12%, transparent), rgba(255,255,255,0.02));
+}
+
+.organizer-icon-preview {
+  width: 86px;
+  height: 86px;
+  border-radius: 18px;
+}
+
+.organizer-icon-preview img,
+.custom-folder-icon img,
+.folder-visual.has-custom-folder-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.organizer-icon-preview > span,
+.default-folder-icon > span {
+  color: var(--red-bright);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.organizer-icon-copy strong,
+.organizer-icon-copy small {
+  display: block;
+}
+
+.organizer-icon-copy small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.64rem;
+  line-height: 1.45;
+}
+
+.organizer-icon-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.custom-folder-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+.asset-subfolder-custom-icon,
+.animation-subfolder-custom-icon {
+  grid-row: 1 / span 2;
+}
+
+.folder-visual.has-custom-folder-icon {
+  overflow: hidden;
+  padding: 0 !important;
+  border-radius: 12px;
+  background: transparent !important;
+}
+
+.folder-visual.has-custom-folder-icon .folder-tab-shape,
+.folder-visual.has-custom-folder-icon .folder-symbol {
+  display: none !important;
+}
+
+.custom-background-controls {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.custom-color-wheel,
+.custom-background-toggle {
+  min-height: 64px;
+  display: grid;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+}
+
+.custom-color-wheel {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.custom-background-toggle {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.custom-color-preview {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--picked-color);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--picked-color) 28%, transparent);
+}
+
+.custom-color-wheel strong,
+.custom-color-wheel small,
+.custom-background-toggle strong,
+.custom-background-toggle small {
+  display: block;
+}
+
+.custom-color-wheel small,
+.custom-background-toggle small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.61rem;
+}
+
+.custom-color-wheel input[type="color"] {
+  width: 48px;
+  height: 40px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: rgba(255,255,255,0.03);
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .organizer-icon-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .organizer-icon-preview {
+    width: 74px;
+    height: 74px;
+  }
+
+  .organizer-icon-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .organizer-icon-actions > * {
+    width: 100%;
+  }
+
+  .custom-color-wheel {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .custom-color-wheel input[type="color"] {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}

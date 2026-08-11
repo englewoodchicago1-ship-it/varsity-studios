@@ -450,3 +450,14 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - This specifically fixes the situation where the login screen showed the new version but the signed-in dashboard still behaved like v0.02.
 - The profile-picture-everywhere code from v0.04 is preserved and now loads from the same current build as the HTML.
 - All visible version badges are synchronized to `APP_VERSION`.
+
+
+## v0.06 — Customization update
+- Signed-in top-left dashboard logo now uses the account profile picture.
+- Login/loading Varsity Studios branding remains the Varsity Studios logo.
+- Nested folder create/rename now opens a centered dashboard modal instead of the browser prompt at the top of the screen.
+- Nested Animation, Image/Icon, Model, and general-file folders can have custom image icons.
+- Top-level folders can also receive a custom icon from the folder workspace.
+- Added a Background Color Wheel in Settings with a custom background toggle.
+- Custom background and folder icons save with the account's existing Supabase-backed dashboard state.
+- Current version: `v0.06`.

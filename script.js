@@ -293,6 +293,7 @@ function loadTabs() {
       folders: Array.isArray(tab.folders)
         ? tab.folders.map(folder => ({
             ...folder,
+            iconUrl: folder.iconUrl || null,
             isOpen: typeof folder.isOpen === "boolean" ? folder.isOpen : false,
             animations: Array.isArray(folder.animations)
               ? folder.animations.map(animation => ({
@@ -300,17 +301,17 @@ function loadTabs() {
                   groupId: animation.groupId || null
                 }))
               : [],
-            animationFolders: Array.isArray(folder.animationFolders) ? folder.animationFolders : [],
+            animationFolders: Array.isArray(folder.animationFolders) ? folder.animationFolders.map(group => ({ ...group, iconUrl: group.iconUrl || null })) : [],
             images: Array.isArray(folder.images)
               ? folder.images.map(item => ({ ...item, groupId: item.groupId || null }))
               : [],
-            imageFolders: Array.isArray(folder.imageFolders) ? folder.imageFolders : [],
+            imageFolders: Array.isArray(folder.imageFolders) ? folder.imageFolders.map(group => ({ ...group, iconUrl: group.iconUrl || null })) : [],
             models: Array.isArray(folder.models)
               ? folder.models.map(item => ({ ...item, groupId: item.groupId || null }))
               : [],
-            modelFolders: Array.isArray(folder.modelFolders) ? folder.modelFolders : [],
+            modelFolders: Array.isArray(folder.modelFolders) ? folder.modelFolders.map(group => ({ ...group, iconUrl: group.iconUrl || null })) : [],
             generalFiles: Array.isArray(folder.generalFiles) ? folder.generalFiles : [],
-            generalFileFolders: Array.isArray(folder.generalFileFolders) ? folder.generalFileFolders : []
+            generalFileFolders: Array.isArray(folder.generalFileFolders) ? folder.generalFileFolders.map(group => ({ ...group, iconUrl: group.iconUrl || null })) : []
           }))
         : []
     }));
@@ -1456,6 +1457,7 @@ folderForm.addEventListener("submit", event => {
     id: makeId(name),
     name,
     description,
+    iconUrl: null,
     isOpen: false,
     animations: [],
     animationFolders: [],
@@ -8313,7 +8315,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.05";
+const APP_VERSION = "v0.06";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -9185,3 +9187,485 @@ function syncVisibleBuildVersion() {
 }
 
 try { syncVisibleBuildVersion(); } catch (error) { console.warn("[VERSION] Sync deferred.", error); }
+
+
+/* =========================================================
+   v0.06 CUSTOMIZATION LAYER
+   - signed-in PFP in top-left
+   - centered nested-folder editor
+   - custom background color wheel
+   - custom folder icons
+   ========================================================= */
+
+const ORGANIZER_DIALOG_STATE = {
+  mode: null,
+  parentFolderId: null,
+  groupType: null,
+  groupId: null,
+  iconUrl: null
+};
+
+const organizerFolderDialog = document.getElementById("organizerFolderDialog");
+const organizerFolderForm = document.getElementById("organizerFolderForm");
+const organizerFolderNameInput = document.getElementById("organizerFolderNameInput");
+const organizerFolderIconInput = document.getElementById("organizerFolderIconInput");
+const organizerIconPreview = document.getElementById("organizerIconPreview");
+const organizerFolderError = document.getElementById("organizerFolderError");
+const organizerFolderTitle = document.getElementById("organizerFolderTitle");
+const organizerFolderKicker = document.getElementById("organizerFolderKicker");
+const organizerFolderDescription = document.getElementById("organizerFolderDescription");
+const saveOrganizerFolderButton = document.getElementById("saveOrganizerFolderButton");
+
+const folderIconDialog = document.getElementById("folderIconDialog");
+const folderIconForm = document.getElementById("folderIconForm");
+const topFolderIconInput = document.getElementById("topFolderIconInput");
+const topFolderIconPreview = document.getElementById("topFolderIconPreview");
+const topFolderIconName = document.getElementById("topFolderIconName");
+let activeTopFolderIconId = null;
+let pendingTopFolderIconUrl = null;
+
+function getNestedGroupCollection(folder, type) {
+  ensureOrganizerArrays(folder);
+  ensureAnimationFolderData(folder);
+
+  if (type === "animation") return folder.animationFolders;
+  if (type === "image") return folder.imageFolders;
+  if (type === "model") return folder.modelFolders;
+  return folder.generalFileFolders;
+}
+
+function renderCustomFolderIcon(iconUrl, fallback = "DIR", extraClass = "") {
+  if (iconUrl) {
+    return `<span class="custom-folder-icon ${extraClass}"><img src="${escapeAttribute(iconUrl)}" alt="" /></span>`;
+  }
+  return `<span class="custom-folder-icon default-folder-icon ${extraClass}"><span>${escapeHtml(fallback)}</span></span>`;
+}
+
+async function prepareSmallIcon(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    throw new Error("Choose an image file.");
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Folder icons must be under 5 MB.");
+  }
+
+  const sourceUrl = await readFileAsDataUrl(file);
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("That image could not be opened."));
+    img.src = sourceUrl;
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 192;
+  canvas.height = 192;
+
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Could not prepare the icon.");
+
+  const side = Math.min(image.naturalWidth, image.naturalHeight);
+  const sx = (image.naturalWidth - side) / 2;
+  const sy = (image.naturalHeight - side) / 2;
+
+  context.drawImage(image, sx, sy, side, side, 0, 0, 192, 192);
+  return canvas.toDataURL("image/webp", 0.86);
+}
+
+function paintOrganizerIconPreview(element, iconUrl) {
+  if (!element) return;
+  element.innerHTML = iconUrl
+    ? `<img src="${escapeAttribute(iconUrl)}" alt="Folder icon preview" />`
+    : `<span>DIR</span>`;
+}
+
+function openOrganizerFolderDialog({ mode, folderId, type, groupId = null }) {
+  const folder = getFolder(folderId) || findFolderById(folderId);
+  if (!folder) return;
+
+  const collection = getNestedGroupCollection(folder, type);
+  const group = groupId ? collection.find(item => item.id === groupId) : null;
+
+  ORGANIZER_DIALOG_STATE.mode = mode;
+  ORGANIZER_DIALOG_STATE.parentFolderId = folder.id;
+  ORGANIZER_DIALOG_STATE.groupType = type;
+  ORGANIZER_DIALOG_STATE.groupId = groupId;
+  ORGANIZER_DIALOG_STATE.iconUrl = group?.iconUrl || null;
+
+  organizerFolderNameInput.value = group?.name || "";
+  organizerFolderIconInput.value = "";
+  organizerFolderError.textContent = "";
+
+  organizerFolderKicker.textContent =
+    type === "animation" ? "ANIMATION FOLDER" :
+    type === "image" ? "IMAGE / ICON FOLDER" :
+    type === "model" ? "MODEL FOLDER" :
+    "FILE FOLDER";
+
+  organizerFolderTitle.textContent = mode === "rename" ? "Edit folder" : "Create folder";
+  organizerFolderDescription.textContent =
+    "Name the folder and optionally give it a custom icon from your files.";
+  saveOrganizerFolderButton.textContent = mode === "rename" ? "Save changes" : "Create folder";
+
+  paintOrganizerIconPreview(organizerIconPreview, ORGANIZER_DIALOG_STATE.iconUrl);
+  organizerFolderDialog.showModal();
+  setTimeout(() => organizerFolderNameInput.focus(), 0);
+}
+
+organizerFolderIconInput?.addEventListener("change", async () => {
+  const file = organizerFolderIconInput.files?.[0];
+  if (!file) return;
+
+  try {
+    ORGANIZER_DIALOG_STATE.iconUrl = await prepareSmallIcon(file);
+    paintOrganizerIconPreview(organizerIconPreview, ORGANIZER_DIALOG_STATE.iconUrl);
+  } catch (error) {
+    organizerFolderError.textContent = error.message || "Could not use that icon.";
+  } finally {
+    organizerFolderIconInput.value = "";
+  }
+});
+
+document.getElementById("removeOrganizerFolderIconButton")?.addEventListener("click", () => {
+  ORGANIZER_DIALOG_STATE.iconUrl = null;
+  paintOrganizerIconPreview(organizerIconPreview, null);
+});
+
+function closeOrganizerFolderDialog() {
+  organizerFolderDialog?.close();
+}
+
+document.getElementById("closeOrganizerFolderDialogButton")?.addEventListener("click", closeOrganizerFolderDialog);
+document.getElementById("cancelOrganizerFolderDialogButton")?.addEventListener("click", closeOrganizerFolderDialog);
+
+organizerFolderForm?.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const folder = getFolder(ORGANIZER_DIALOG_STATE.parentFolderId) ||
+    findFolderById(ORGANIZER_DIALOG_STATE.parentFolderId);
+
+  if (!folder) {
+    organizerFolderError.textContent = "Folder could not be found.";
+    return;
+  }
+
+  const collection = getNestedGroupCollection(folder, ORGANIZER_DIALOG_STATE.groupType);
+  const name = organizerFolderNameInput.value.trim();
+
+  if (!name) {
+    organizerFolderError.textContent = "Enter a folder name.";
+    return;
+  }
+
+  const duplicate = collection.some(item =>
+    item.id !== ORGANIZER_DIALOG_STATE.groupId &&
+    item.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (duplicate) {
+    organizerFolderError.textContent = "A folder with that name already exists.";
+    return;
+  }
+
+  if (ORGANIZER_DIALOG_STATE.mode === "rename") {
+    const group = collection.find(item => item.id === ORGANIZER_DIALOG_STATE.groupId);
+    if (!group) return;
+    group.name = name;
+    group.iconUrl = ORGANIZER_DIALOG_STATE.iconUrl || null;
+  } else {
+    collection.push({
+      id: makeId(name),
+      name,
+      iconUrl: ORGANIZER_DIALOG_STATE.iconUrl || null
+    });
+  }
+
+  saveData();
+  scheduleCloudSave();
+  organizerFolderDialog.close();
+
+  if (activeView.startsWith("folder:")) {
+    renderFolderWorkspace();
+  } else {
+    renderFolders(getActiveTab());
+  }
+});
+
+/* Replace browser prompt folder creation/rename with centered dashboard modal. */
+createAnimationSubfolder = function createAnimationSubfolderCentered(folderId) {
+  openOrganizerFolderDialog({ mode: "create", folderId, type: "animation" });
+};
+
+renameAnimationSubfolder = function renameAnimationSubfolderCentered(folderId, groupId) {
+  openOrganizerFolderDialog({ mode: "rename", folderId, type: "animation", groupId });
+};
+
+createOrganizerGroup = function createOrganizerGroupCentered(folder, type) {
+  if (!folder) return;
+  openOrganizerFolderDialog({ mode: "create", folderId: folder.id, type });
+};
+
+renameOrganizerGroup = function renameOrganizerGroupCentered(folder, type, groupId) {
+  if (!folder) return;
+  openOrganizerFolderDialog({ mode: "rename", folderId: folder.id, type, groupId });
+};
+
+/* Top-level folder icon editor. */
+function openTopFolderIconDialog(folderId) {
+  const folder = getFolder(folderId) || findFolderById(folderId);
+  if (!folder) return;
+
+  activeTopFolderIconId = folder.id;
+  pendingTopFolderIconUrl = folder.iconUrl || null;
+
+  if (topFolderIconName) topFolderIconName.textContent = folder.name;
+  if (topFolderIconInput) topFolderIconInput.value = "";
+  paintOrganizerIconPreview(topFolderIconPreview, pendingTopFolderIconUrl);
+  folderIconDialog.showModal();
+}
+
+topFolderIconInput?.addEventListener("change", async () => {
+  const file = topFolderIconInput.files?.[0];
+  if (!file) return;
+
+  try {
+    pendingTopFolderIconUrl = await prepareSmallIcon(file);
+    paintOrganizerIconPreview(topFolderIconPreview, pendingTopFolderIconUrl);
+  } catch (error) {
+    window.alert(error.message || "Could not use that icon.");
+  } finally {
+    topFolderIconInput.value = "";
+  }
+});
+
+document.getElementById("removeTopFolderIconButton")?.addEventListener("click", () => {
+  pendingTopFolderIconUrl = null;
+  paintOrganizerIconPreview(topFolderIconPreview, null);
+});
+
+function closeTopFolderIconDialog() {
+  folderIconDialog?.close();
+  activeTopFolderIconId = null;
+  pendingTopFolderIconUrl = null;
+}
+
+document.getElementById("closeFolderIconDialogButton")?.addEventListener("click", closeTopFolderIconDialog);
+document.getElementById("cancelFolderIconDialogButton")?.addEventListener("click", closeTopFolderIconDialog);
+
+folderIconForm?.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const folder = getFolder(activeTopFolderIconId) || findFolderById(activeTopFolderIconId);
+  if (!folder) return;
+
+  folder.iconUrl = pendingTopFolderIconUrl || null;
+  saveData();
+  scheduleCloudSave();
+  folderIconDialog.close();
+
+  if (activeView.startsWith("folder:")) {
+    renderFolderWorkspace();
+  } else {
+    renderFolders(getActiveTab());
+  }
+});
+
+/* Background color wheel. */
+function normalizeHexColor(value, fallback = "#16060f") {
+  return /^#[0-9a-f]{6}$/i.test(value || "") ? value : fallback;
+}
+
+function hexToRgb(hex) {
+  const clean = normalizeHexColor(hex).slice(1);
+  return {
+    r: parseInt(clean.slice(0, 2), 16),
+    g: parseInt(clean.slice(2, 4), 16),
+    b: parseInt(clean.slice(4, 6), 16)
+  };
+}
+
+function mixHex(hex, factor) {
+  const { r, g, b } = hexToRgb(hex);
+  const mix = value => Math.max(0, Math.min(255, Math.round(value * factor)));
+  return `#${[mix(r), mix(g), mix(b)].map(v => v.toString(16).padStart(2, "0")).join("")}`;
+}
+
+const v006BaseApplyDashboardSettings = applyDashboardSettings;
+applyDashboardSettings = function applyDashboardSettingsV006() {
+  v006BaseApplyDashboardSettings();
+
+  if (dashboardSettings.customBackgroundEnabled) {
+    const base = normalizeHexColor(dashboardSettings.customBackgroundColor, "#16060f");
+    document.documentElement.style.setProperty("--theme-top", mixHex(base, 1.2));
+    document.documentElement.style.setProperty("--theme-middle", mixHex(base, 0.62));
+    document.documentElement.style.setProperty("--custom-page-background", base);
+    document.body.classList.add("custom-background-enabled");
+  } else {
+    document.documentElement.style.removeProperty("--custom-page-background");
+    document.body.classList.remove("custom-background-enabled");
+  }
+};
+
+const v006BaseRenderSettingsPage = renderSettingsPage;
+renderSettingsPage = function renderSettingsPageV006() {
+  v006BaseRenderSettingsPage();
+
+  const settingsPage = tabContent.querySelector(".settings-page");
+  if (!settingsPage || settingsPage.querySelector(".custom-background-panel")) return;
+
+  const base = normalizeHexColor(dashboardSettings.customBackgroundColor, "#16060f");
+
+  const panel = document.createElement("section");
+  panel.className = "settings-panel custom-background-panel";
+  panel.innerHTML = `
+    <div class="settings-heading">
+      <div>
+        <span class="dashboard-kicker">CUSTOM BACKGROUND</span>
+        <h3>Background color wheel</h3>
+        <p>Choose your own dashboard background color instead of being limited to preset colorways.</p>
+      </div>
+    </div>
+
+    <div class="custom-background-controls">
+      <label class="custom-color-wheel">
+        <span class="custom-color-preview" style="--picked-color:${escapeAttribute(base)}"></span>
+        <span>
+          <strong>Background color</strong>
+          <small id="customBackgroundHex">${escapeHtml(base.toUpperCase())}</small>
+        </span>
+        <input id="customBackgroundColor" type="color" value="${escapeAttribute(base)}" />
+      </label>
+
+      <label class="custom-background-toggle">
+        <span>
+          <strong>Use custom background</strong>
+          <small>Turn this off to use the selected preset colorway again.</small>
+        </span>
+        <input id="customBackgroundEnabled" type="checkbox" ${dashboardSettings.customBackgroundEnabled ? "checked" : ""} />
+      </label>
+    </div>
+  `;
+
+  settingsPage.insertBefore(panel, settingsPage.firstElementChild);
+
+  const picker = panel.querySelector("#customBackgroundColor");
+  const toggle = panel.querySelector("#customBackgroundEnabled");
+  const hex = panel.querySelector("#customBackgroundHex");
+  const preview = panel.querySelector(".custom-color-preview");
+
+  picker?.addEventListener("input", () => {
+    dashboardSettings.customBackgroundColor = picker.value;
+    dashboardSettings.customBackgroundEnabled = true;
+
+    if (toggle) toggle.checked = true;
+    if (hex) hex.textContent = picker.value.toUpperCase();
+    if (preview) preview.style.setProperty("--picked-color", picker.value);
+
+    saveDashboardSettings();
+    applyDashboardSettings();
+  });
+
+  toggle?.addEventListener("change", () => {
+    dashboardSettings.customBackgroundEnabled = toggle.checked;
+    saveDashboardSettings();
+    applyDashboardSettings();
+  });
+};
+
+/* Show profile picture in signed-in top-left/nav logo too. */
+const v006BaseUpdateProfilePictureUI = updateProfilePictureUI;
+updateProfilePictureUI = function updateProfilePictureUIV006() {
+  v006BaseUpdateProfilePictureUI();
+
+  const source = getSavedProfilePicture();
+  const signedInLogo = document.getElementById("signedInBrandLogo");
+  if (signedInLogo) {
+    signedInLogo.src = source;
+    signedInLogo.alt = `${getSignedInUser().displayName} profile picture`;
+  }
+};
+
+/* Folder-card icon refresh wrapper. */
+const v006BaseRenderFolders = renderFolders;
+renderFolders = function renderFoldersV006(activeTab) {
+  v006BaseRenderFolders(activeTab);
+
+  activeTab?.folders?.forEach(folder => {
+    const card =
+      tabContent.querySelector(`[data-open-folder="${CSS.escape(folder.id)}"]`) ||
+      tabContent.querySelector(`[data-folder-id="${CSS.escape(folder.id)}"]`);
+
+    if (!card) return;
+
+    const visual = card.querySelector(".folder-visual");
+    if (visual && folder.iconUrl) {
+      visual.classList.add("has-custom-folder-icon");
+      visual.innerHTML = `<img src="${escapeAttribute(folder.iconUrl)}" alt="" />`;
+    }
+  });
+};
+
+/* Folder-workspace customize icon action. */
+const v006BaseRenderFolderWorkspace = renderFolderWorkspace;
+renderFolderWorkspace = function renderFolderWorkspaceV006() {
+  v006BaseRenderFolderWorkspace();
+
+  const folder = getCurrentFolder?.();
+  if (!folder) return;
+
+  const toolbar =
+    tabContent.querySelector(".folder-workspace-toolbar") ||
+    tabContent.querySelector(".folder-detail-actions") ||
+    tabContent.querySelector(".folder-management-heading-actions");
+
+  if (toolbar && !toolbar.querySelector("[data-customize-folder-icon]")) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "secondary-button compact";
+    button.dataset.customizeFolderIcon = folder.id;
+    button.textContent = "Customize icon";
+    button.addEventListener("click", () => openTopFolderIconDialog(folder.id));
+    toolbar.appendChild(button);
+  }
+};
+
+/* Nested folder heading icons use each group's custom image when available. */
+const v006BaseRenderOrganizerGroupHeading = renderOrganizerGroupHeading;
+renderOrganizerGroupHeading = function renderOrganizerGroupHeadingV006(folder, type, group, count) {
+  const html = v006BaseRenderOrganizerGroupHeading(folder, type, group, count);
+  if (!group?.iconUrl) return html;
+
+  return html.replace(
+    '<span class="asset-subfolder-icon">DIR</span>',
+    renderCustomFolderIcon(group.iconUrl, "DIR", "asset-subfolder-custom-icon")
+  );
+};
+
+/* Animation nested folder icon injection. */
+const v006BaseRenderAnimationsSection = renderAnimationsSection;
+renderAnimationsSection = function renderAnimationsSectionV006(folder) {
+  let html = v006BaseRenderAnimationsSection(folder);
+
+  folder.animationFolders?.forEach(group => {
+    if (!group.iconUrl) return;
+
+    const needle = `<span class="animation-subfolder-icon">DIR</span>
+                <strong>${escapeHtml(group.name)}</strong>`;
+
+    const replacement = `${renderCustomFolderIcon(group.iconUrl, "DIR", "animation-subfolder-custom-icon")}
+                <strong>${escapeHtml(group.name)}</strong>`;
+
+    html = html.replace(needle, replacement);
+  });
+
+  return html;
+};
+
+/* Apply current settings/profile after login and on first load. */
+try {
+  applyDashboardSettings();
+  syncVisibleBuildVersion();
+} catch (error) {
+  console.warn("[v0.06] Initial customization sync deferred.", error);
+}
