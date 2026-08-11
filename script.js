@@ -1368,6 +1368,7 @@ loginForm.addEventListener("submit", async event => {
     loginError.textContent = "";
     setLoggedIn(true);
     updateSignedInIdentity();
+    syncVisibleBuildVersion();
     setupMobileDashboardControls();
 
     if (!accountStorageGet(TUTORIAL_STORAGE_KEY)) {
@@ -8312,7 +8313,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.04";
+const APP_VERSION = "v0.05";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -9171,3 +9172,16 @@ switchView = function switchViewV002(nextView) {
 
   return v002BaseSwitchView(nextView);
 };
+
+
+/* v0.05 cache/version synchronization */
+function syncVisibleBuildVersion() {
+  document.querySelectorAll(".login-build-chip strong, .dashboard-build-chip strong").forEach(element => {
+    element.textContent = APP_VERSION;
+  });
+
+  const bottomBadge = document.getElementById("appVersionBadge");
+  if (bottomBadge) bottomBadge.textContent = APP_VERSION;
+}
+
+try { syncVisibleBuildVersion(); } catch (error) { console.warn("[VERSION] Sync deferred.", error); }

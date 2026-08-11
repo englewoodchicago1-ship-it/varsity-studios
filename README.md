@@ -443,3 +443,10 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - The actual Varsity Studios brand logo remains unchanged on the loading screen, login screen, and navigation branding.
 - Changing or resetting the profile picture refreshes all visible user-profile image locations.
 - Current build: `v0.04`.
+
+
+## v0.05 — Cache synchronization fix
+- Added versioned asset URLs (`styles.css?v=0.05` and `script.js?v=0.05`) so browsers/GitHub Pages cannot keep using an older JavaScript build with a newer HTML file.
+- This specifically fixes the situation where the login screen showed the new version but the signed-in dashboard still behaved like v0.02.
+- The profile-picture-everywhere code from v0.04 is preserved and now loads from the same current build as the HTML.
+- All visible version badges are synchronized to `APP_VERSION`.
