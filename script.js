@@ -7516,3 +7516,249 @@ if (folderWorkspaceRenderer) {
     attachFolderFileManager(folder);
   };
 }
+
+
+/* Profile pictures + member navigation permissions */
+const PROFILE_PICTURE_KEY = "profilePicture";
+const NON_OWNER_HIDDEN_VIEWS = new Set(["websites", "developer", "releases", "team"]);
+
+function isRestrictedNonOwner() {
+  return Boolean(currentUser) && currentUser.role !== "Owner";
+}
+
+function getSavedProfilePicture() {
+  return accountStorageGet(PROFILE_PICTURE_KEY) || "assets/varsity-logo.png";
+}
+
+function updateProfilePictureUI() {
+  const source = getSavedProfilePicture();
+
+  document.querySelectorAll("[data-profile-avatar]").forEach(image => {
+    image.src = source;
+  });
+
+  document.querySelectorAll("[data-profile-picture-status]").forEach(element => {
+    element.textContent =
+      accountStorageGet(PROFILE_PICTURE_KEY)
+        ? "Custom profile picture"
+        : "Using Varsity Studios logo";
+  });
+}
+
+async function prepareProfilePicture(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    throw new Error("Choose a PNG, JPG, WEBP, or GIF image.");
+  }
+
+  if (file.size > 8 * 1024 * 1024) {
+    throw new Error("Profile pictures must be under 8 MB.");
+  }
+
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Could not read that image."));
+    reader.readAsDataURL(file);
+  });
+
+  const image = await new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("That image could not be opened."));
+    img.src = dataUrl;
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 384;
+  canvas.height = 384;
+
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Could not prepare the profile picture.");
+
+  const side = Math.min(image.naturalWidth, image.naturalHeight);
+  const sourceX = (image.naturalWidth - side) / 2;
+  const sourceY = (image.naturalHeight - side) / 2;
+
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    side,
+    side,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  return canvas.toDataURL("image/jpeg", 0.84);
+}
+
+async function saveProfilePictureFromFile(file) {
+  try {
+    const prepared = await prepareProfilePicture(file);
+    accountStorageSet(PROFILE_PICTURE_KEY, prepared);
+    updateProfilePictureUI();
+    scheduleCloudSave();
+    return true;
+  } catch (error) {
+    window.alert(error.message || "Could not update the profile picture.");
+    return false;
+  }
+}
+
+function openProfilePicturePicker() {
+  if (!currentUser) return;
+  const input = document.getElementById("profilePictureFileInput");
+  if (!input) return;
+  input.value = "";
+  input.click();
+}
+
+const profilePictureFileInput = document.getElementById("profilePictureFileInput");
+if (profilePictureFileInput) {
+  profilePictureFileInput.addEventListener("change", async () => {
+    const file = profilePictureFileInput.files?.[0];
+    if (!file) return;
+
+    const saved = await saveProfilePictureFromFile(file);
+    if (saved && activeView === "settings") {
+      renderSettingsPage();
+    }
+  });
+}
+
+const topbarProfilePictureButton = document.getElementById("topbarProfilePictureButton");
+if (topbarProfilePictureButton) {
+  topbarProfilePictureButton.addEventListener("click", openProfilePicturePicker);
+}
+
+const profileBaseUpdateSignedInIdentity = updateSignedInIdentity;
+updateSignedInIdentity = function updateSignedInIdentityWithPicture() {
+  profileBaseUpdateSignedInIdentity();
+  updateProfilePictureUI();
+};
+
+const profileBaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationWithMemberPermissions() {
+  if (isRestrictedNonOwner() && NON_OWNER_HIDDEN_VIEWS.has(activeView)) {
+    activeView = "main";
+  }
+
+  profileBaseRenderNavigation();
+
+  if (isRestrictedNonOwner()) {
+    const hiddenLabels = new Set([
+      "Global Websites",
+      "Developer Hub",
+      "Releases",
+      "Team"
+    ]);
+
+    sidebarTabs.querySelectorAll(".tab-button").forEach(button => {
+      const label = button.querySelector(".tab-name")?.textContent?.trim();
+      if (hiddenLabels.has(label)) {
+        button.remove();
+      }
+    });
+  }
+
+  updateProfilePictureUI();
+};
+
+const profileBaseSwitchView = switchView;
+switchView = function switchViewWithMemberPermissions(nextView) {
+  if (isRestrictedNonOwner() && NON_OWNER_HIDDEN_VIEWS.has(nextView)) {
+    nextView = "main";
+  }
+  return profileBaseSwitchView(nextView);
+};
+
+const profileBaseRenderMainDashboard = renderMainDashboard;
+renderMainDashboard = function renderMainDashboardWithMemberPermissions() {
+  profileBaseRenderMainDashboard();
+
+  if (isRestrictedNonOwner()) {
+    tabContent.querySelectorAll("[data-go-view]").forEach(button => {
+      const view = button.dataset.goView;
+      if (NON_OWNER_HIDDEN_VIEWS.has(view)) {
+        button.remove();
+      }
+    });
+
+    tabContent.querySelectorAll(".quick-action").forEach(button => {
+      const text = button.textContent || "";
+      if (
+        text.includes("Global Websites") ||
+        text.includes("Developer Hub") ||
+        text.includes("Release Manager") ||
+        text.includes("Team Directory")
+      ) {
+        button.remove();
+      }
+    });
+  }
+};
+
+const profileBaseRenderSettingsPage = renderSettingsPage;
+renderSettingsPage = function renderSettingsPageWithProfilePicture() {
+  profileBaseRenderSettingsPage();
+
+  const settingsPage = tabContent.querySelector(".settings-page");
+  if (!settingsPage || settingsPage.querySelector(".profile-picture-settings-panel")) {
+    updateProfilePictureUI();
+    return;
+  }
+
+  const panel = document.createElement("section");
+  panel.className = "settings-panel profile-picture-settings-panel";
+  panel.innerHTML = `
+    <div class="settings-heading">
+      <div>
+        <span class="dashboard-kicker">YOUR PROFILE</span>
+        <h3>Profile picture</h3>
+        <p>Choose an image from your device. It follows your account through the Varsity Studios cloud save.</p>
+      </div>
+    </div>
+
+    <div class="profile-picture-settings-content">
+      <div class="profile-picture-preview">
+        <img class="profile-avatar profile-avatar-large" data-profile-avatar src="${escapeAttribute(getSavedProfilePicture())}" alt="Profile picture preview" />
+      </div>
+
+      <div class="profile-picture-settings-copy">
+        <strong>${escapeHtml(getSignedInUser().displayName)}</strong>
+        <small data-profile-picture-status>
+          ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Custom profile picture" : "Using Varsity Studios logo"}
+        </small>
+
+        <div class="profile-picture-settings-actions">
+          <button id="changeProfilePictureButton" class="primary-button compact" type="button">
+            ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Change picture" : "Upload picture"}
+          </button>
+
+          <button id="removeProfilePictureButton" class="secondary-button compact" type="button">
+            Use Varsity logo
+          </button>
+        </div>
+
+        <p class="profile-picture-help">
+          PNG, JPG, WEBP, or GIF. The image is cropped square and optimized before saving.
+        </p>
+      </div>
+    </div>
+  `;
+
+  settingsPage.insertBefore(panel, settingsPage.firstElementChild);
+
+  panel.querySelector("#changeProfilePictureButton")?.addEventListener("click", openProfilePicturePicker);
+
+  panel.querySelector("#removeProfilePictureButton")?.addEventListener("click", () => {
+    accountStorageRemove(PROFILE_PICTURE_KEY);
+    updateProfilePictureUI();
+    scheduleCloudSave();
+    renderSettingsPage();
+  });
+
+  updateProfilePictureUI();
+};

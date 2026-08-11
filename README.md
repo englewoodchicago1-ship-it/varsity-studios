@@ -340,3 +340,13 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Uploaded files can be renamed, downloaded, or deleted.
 - File metadata shows type, size, and upload time.
 - Mobile folder file management uses a responsive stacked layout.
+
+
+## Member navigation + profile pictures
+- Non-owner accounts no longer see Global Websites, Developer Hub, Releases, or Team.
+- Members/Users keep Dashboard, Settings, Game Systems, and their custom tabs/folders.
+- Every account can upload or change a profile picture from a local image file.
+- Profile pictures are cropped to a square and optimized before cloud saving.
+- The Varsity Studios logo is the fallback/template picture when no custom profile picture is set.
+- Users can return to the Varsity Studios logo from Settings at any time.
+- Profile-picture state is stored in the account cloud snapshot and follows the same Supabase user across devices.

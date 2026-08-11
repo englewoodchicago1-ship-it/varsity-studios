@@ -111,6 +111,9 @@
           </button>
 
           <div class="topbar-account">
+            <button id="topbarProfilePictureButton" class="topbar-profile-picture-button" type="button" aria-label="Change profile picture" title="Change profile picture">
+              <img class="profile-avatar" data-profile-avatar src="assets/varsity-logo.png" alt="Profile picture" />
+            </button>
             <div class="signed-in">
               <span class="status-dot"></span>
               <div>
@@ -374,5 +377,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
+  <input id="profilePictureFileInput" class="hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
 </body>
 </html>
