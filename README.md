@@ -356,3 +356,9 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Removed the large/clickable profile image from the top-right header.
 - Profile picture upload/change now lives only in Settings → Your Profile → Profile picture.
 - The Varsity Studios logo remains only as the fallback/default picture when no custom image is set.
+
+
+## Login alignment update
+- Username/password login card is centered horizontally and vertically.
+- Removed left-side positioning overrides.
+- Centered layout also applies on mobile.

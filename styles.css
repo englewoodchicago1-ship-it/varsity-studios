@@ -8119,3 +8119,54 @@ body[data-theme-mode="light"] .topbar-account {
     width: 100%;
   }
 }
+
+
+/* Center the login form */
+.login-view {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+}
+
+.login-shell,
+.login-stage,
+.login-content {
+  width: 100%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.login-card {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  margin: 0 auto !important;
+  width: min(440px, calc(100vw - 32px)) !important;
+  max-width: 440px !important;
+  transform: none !important;
+}
+
+.login-card form,
+#loginForm {
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .login-view {
+    min-height: 100dvh !important;
+    padding:
+      max(18px, env(safe-area-inset-top))
+      16px
+      max(18px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .login-card {
+    width: min(430px, 100%) !important;
+    max-width: 430px !important;
+    margin: auto !important;
+  }
+}
