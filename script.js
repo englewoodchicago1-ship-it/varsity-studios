@@ -484,7 +484,12 @@ function renderMainDashboard() {
           <h3 data-user-welcome>Welcome back.</h3>
           <p>Keep your game assets, Roblox animations, model files, images, icons, and useful websites organized in one place.</p>
         </div>
-        <img src="assets/varsity-logo.png" alt="Varsity Studios logo" />
+        <img
+          data-profile-avatar
+          class="welcome-profile-avatar"
+          src="${escapeAttribute(getSavedProfilePicture())}"
+          alt="${escapeAttribute(getSignedInUser().displayName)} profile picture"
+        />
       </section>
 
       <section class="dashboard-stat-grid">
@@ -2480,7 +2485,12 @@ function renderMainDashboard() {
           <h3>Welcome back, ykdrxc.</h3>
           <p>Manage game projects, development tasks, Roblox IDs, code snippets, models, animations, images, and useful links.</p>
         </div>
-        <img src="assets/varsity-logo.png" alt="Varsity Studios logo" />
+        <img
+          data-profile-avatar
+          class="welcome-profile-avatar"
+          src="${escapeAttribute(getSavedProfilePicture())}"
+          alt="${escapeAttribute(getSignedInUser().displayName)} profile picture"
+        />
       </section>
 
       <section class="dashboard-stat-grid developer-stat-grid">
@@ -8268,6 +8278,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
       }
 
       if (preview) preview.src = verified;
+      updateProfilePictureUI();
       if (status) status.textContent = "Custom profile picture saved";
       if (uploadLabel) uploadLabel.textContent = "Change profile picture";
 
@@ -8287,6 +8298,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
     accountStorageRemove(PROFILE_PICTURE_KEY);
 
     if (preview) preview.src = "assets/varsity-logo.png";
+    updateProfilePictureUI();
     if (status) status.textContent = "Using Varsity Studios logo";
     if (uploadLabel) uploadLabel.textContent = "Upload profile picture";
 
@@ -8300,7 +8312,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.03";
+const APP_VERSION = "v0.04";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;

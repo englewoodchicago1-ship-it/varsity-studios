@@ -435,3 +435,11 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Profile upload no longer depends on the old global hidden file input event.
 - The preview updates immediately, verifies the account save, and then pushes the change to Supabase.
 - Current build: `v0.03`.
+
+
+## v0.04 — Profile picture everywhere it represents the user
+- Dashboard welcome/profile cards now use the signed-in account's saved profile picture.
+- Developer/owner welcome cards that previously showed the Varsity logo now use the account profile picture too.
+- The actual Varsity Studios brand logo remains unchanged on the loading screen, login screen, and navigation branding.
+- Changing or resetting the profile picture refreshes all visible user-profile image locations.
+- Current build: `v0.04`.

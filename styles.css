@@ -8786,3 +8786,28 @@ body.auth-locked #loginView,
 .tab-button .tab-mark {
   flex: 0 0 auto;
 }
+
+
+/* v0.04 account profile picture across dashboard */
+.welcome-panel .welcome-profile-avatar {
+  width: 86px !important;
+  height: 86px !important;
+  flex: 0 0 86px;
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: 18px !important;
+  border: 1px solid color-mix(in srgb, var(--red-bright) 22%, var(--border));
+  background: rgba(255,255,255,0.025);
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+@media (max-width: 860px) {
+  .welcome-panel .welcome-profile-avatar {
+    width: 62px !important;
+    height: 62px !important;
+    flex-basis: 62px;
+    border-radius: 14px !important;
+  }
+}
