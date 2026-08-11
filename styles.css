@@ -8684,3 +8684,82 @@ body.auth-locked #loginView,
     flex-direction: column;
   }
 }
+
+
+/* v0.02 build/version UI */
+.build-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  min-height: 27px;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--red-bright) 24%, var(--border));
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+    color-mix(in srgb, var(--red-bright) 4%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.build-chip .build-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--red-bright);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--red-bright) 70%, transparent);
+}
+
+.build-chip strong {
+  color: var(--text);
+  font-size: 0.61rem;
+  font-weight: 900;
+  letter-spacing: 0.045em;
+}
+
+.build-chip small {
+  color: var(--muted);
+  font-size: 0.54rem;
+  font-weight: 750;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.login-build-chip {
+  margin-top: 8px;
+}
+
+.dashboard-build-chip {
+  flex: 0 0 auto;
+}
+
+.app-version-badge {
+  right: 14px !important;
+  bottom: 12px !important;
+  min-height: 27px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px !important;
+  border: 1px solid color-mix(in srgb, var(--red-bright) 18%, rgba(255,255,255,0.08)) !important;
+  border-radius: 999px !important;
+  color: color-mix(in srgb, var(--text) 58%, transparent) !important;
+  background: rgba(7,8,12,0.72) !important;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.22);
+  font-size: 0.57rem !important;
+}
+
+@media (max-width: 860px) {
+  .dashboard-build-chip small {
+    display: none;
+  }
+
+  .dashboard-build-chip {
+    padding-inline: 7px;
+  }
+
+  .app-version-badge {
+    right: 8px !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+}

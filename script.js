@@ -1734,7 +1734,10 @@ function getFolderItemCount(folder) {
   if (isAnimationsFolder(folder)) return folder.animations.length;
   if (isImageFolder(folder)) return folder.images.length;
   if (isModelsFolder(folder)) return folder.models.length;
-  return 0;
+
+  ensureOrganizerArrays(folder);
+  return folder.generalFiles.length;
+
 }
 
 function renderFolderWorkspace() {
@@ -1841,14 +1844,23 @@ function renderFolderAddButton(folder) {
   }
 
   if (isImageFolder(folder)) {
-    return `<button id="workspaceUploadImageButton" class="primary-button compact" type="button">+ Upload images</button>`;
+    return `
+      <button id="workspaceNewImageFolderButton" class="secondary-button compact" type="button">+ New folder</button>
+      <button id="workspaceUploadImageButton" class="primary-button compact" type="button">+ Upload images</button>
+    `;
   }
 
   if (isModelsFolder(folder)) {
-    return `<button id="workspaceUploadModelButton" class="primary-button compact" type="button">+ Upload model</button>`;
+    return `
+      <button id="workspaceNewModelFolderButton" class="secondary-button compact" type="button">+ New folder</button>
+      <button id="workspaceUploadModelButton" class="primary-button compact" type="button">+ Upload model</button>
+    `;
   }
 
-  return "";
+  return `
+    <button id="workspaceNewGeneralFileFolderButton" class="secondary-button compact" type="button">+ New folder</button>
+    <button id="workspaceUploadGeneralFileButton" class="primary-button compact" type="button">+ Upload files</button>
+  `;
 }
 
 function renderDedicatedFolderList(folder) {
@@ -1932,58 +1944,18 @@ function renderDedicatedFolderList(folder) {
   }
 
   if (isImageFolder(folder)) {
-    if (!folder.images.length) return renderWorkspaceEmpty("No images or icons uploaded yet.", "Upload a file from your computer to add it here.");
-
-    return `
-      <div class="workspace-media-list">
-        ${folder.images.map(image => `
-          <article class="workspace-media-item">
-            <button class="workspace-media-preview" type="button" data-preview-image="${escapeAttribute(image.dataUrl)}">
-              <img src="${escapeAttribute(image.dataUrl)}" alt="${escapeAttribute(image.name)}" />
-            </button>
-            <div class="workspace-item-main">
-              <strong>${escapeHtml(image.name)}</strong>
-              <span>${formatFileSize(image.size)} • ${escapeHtml(image.type || "Image")}</span>
-            </div>
-            <div class="workspace-item-actions">
-              <button class="workspace-edit-button" type="button" data-edit-image="${image.id}">Rename</button>
-              <button class="workspace-download-button" type="button" data-download-image="${image.id}">Download</button>
-              <button class="workspace-delete-button" type="button" data-delete-image="${image.id}">Delete</button>
-            </div>
-          </article>
-        `).join("")}
-      </div>
-    `;
+    ensureOrganizerArrays(folder);
+    return renderGroupedImages(folder);
   }
 
   if (isModelsFolder(folder)) {
-    if (!folder.models.length) return renderWorkspaceEmpty("No model files uploaded yet.", "Upload a model file, then give it a name and description.");
-
-    return `
-      <div class="workspace-item-list">
-        ${folder.models.map(model => `
-          <article class="workspace-list-item workspace-model-row">
-            <div class="model-file-icon">${escapeHtml(fileExtension(model.fileName))}</div>
-            <div class="workspace-item-main">
-              <strong>${escapeHtml(model.name)}</strong>
-              <p>${escapeHtml(model.description)}</p>
-              <span>${escapeHtml(model.fileName)} • ${formatFileSize(model.size)}</span>
-            </div>
-            <div class="workspace-item-actions">
-              <button class="workspace-edit-button" type="button" data-edit-model="${model.id}">Edit</button>
-              <button class="workspace-download-button" type="button" data-download-model="${model.id}">Download</button>
-              <button class="workspace-delete-button" type="button" data-delete-model="${model.id}">Delete</button>
-            </div>
-          </article>
-        `).join("")}
-      </div>
-    `;
+    ensureOrganizerArrays(folder);
+    return renderGroupedModels(folder);
   }
 
-  return renderWorkspaceEmpty(
-    "This folder is empty.",
-    "Rename it to Animations, Images / Icons, or Models to unlock special tools."
-  );
+  ensureOrganizerArrays(folder);
+  return renderGeneralFiles(folder);
+
 }
 
 function renderWorkspaceEmpty(title, description) {
@@ -1997,8 +1969,64 @@ function renderWorkspaceEmpty(title, description) {
 }
 
 function bindDedicatedFolderEvents(folder) {
+  ensureOrganizerArrays(folder);
+
   document.getElementById("workspaceAddAnimationButton")?.addEventListener("click", () => {
     openAnimationDialog(folder.id);
+  });
+
+  document.getElementById("workspaceNewImageFolderButton")?.addEventListener("click", () => {
+    createOrganizerGroup(folder, "image");
+  });
+
+  document.getElementById("workspaceNewModelFolderButton")?.addEventListener("click", () => {
+    createOrganizerGroup(folder, "model");
+  });
+
+  document.getElementById("workspaceNewGeneralFileFolderButton")?.addEventListener("click", () => {
+    createOrganizerGroup(folder, "file");
+  });
+
+  document.getElementById("workspaceUploadGeneralFileButton")?.addEventListener("click", () => {
+    activeGeneralFileFolderId = folder.id;
+    generalFolderFileInput.value = "";
+    generalFolderFileInput.click();
+  });
+
+  tabContent.querySelectorAll("[data-organizer-rename]").forEach(button => {
+    button.addEventListener("click", () => {
+      renameOrganizerGroup(folder, button.dataset.organizerType, button.dataset.organizerRename);
+    });
+  });
+
+  tabContent.querySelectorAll("[data-organizer-delete]").forEach(button => {
+    button.addEventListener("click", () => {
+      deleteOrganizerGroup(folder, button.dataset.organizerType, button.dataset.organizerDelete);
+    });
+  });
+
+  tabContent.querySelectorAll(".organizer-move-select").forEach(select => {
+    select.addEventListener("change", () => {
+      moveOrganizerItem(folder, select.dataset.organizerType, select.dataset.organizerItem, select.value);
+    });
+  });
+
+  tabContent.querySelectorAll("[data-download-general-file]").forEach(button => {
+    button.addEventListener("click", () => {
+      const file = folder.generalFiles.find(item => item.id === button.dataset.downloadGeneralFile);
+      if (!file) return;
+      triggerDownload(file.dataUrl, file.fileName || file.name);
+    });
+  });
+
+  tabContent.querySelectorAll("[data-delete-general-file]").forEach(button => {
+    button.addEventListener("click", () => {
+      const file = folder.generalFiles.find(item => item.id === button.dataset.deleteGeneralFile);
+      if (!file || !window.confirm(`Delete "${file.name}"?`)) return;
+      folder.generalFiles = folder.generalFiles.filter(item => item.id !== file.id);
+      saveData();
+      renderFolderWorkspace();
+    });
   });
 
   document.getElementById("workspaceNewAnimationFolderButton")?.addEventListener("click", () => {
@@ -7607,13 +7635,26 @@ function normalizeFolderFiles(folder) {
 }
 
 function getActiveCustomTab() {
-  return tabs.find(tab => tab.id === activeView && tab.custom);
+  const folderView = typeof parseFolderView === "function" ? parseFolderView() : null;
+
+  if (folderView) {
+    return tabs.find(tab => tab.id === folderView.tabId) || null;
+  }
+
+  if (activeView.startsWith("tab:")) {
+    return tabs.find(tab => tab.id === activeView.slice(4)) || null;
+  }
+
+  return tabs.find(tab => tab.id === activeView) || null;
 }
 
 function findFolderById(folderId) {
-  const tab = getActiveCustomTab();
-  if (!tab || !Array.isArray(tab.folders)) return null;
-  return tab.folders.find(folder => folder.id === folderId) || null;
+  for (const tab of tabs) {
+    if (!Array.isArray(tab.folders)) continue;
+    const folder = tab.folders.find(item => item.id === folderId);
+    if (folder) return folder;
+  }
+  return null;
 }
 
 function persistTabsAndRefresh() {
@@ -8206,7 +8247,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.01";
+const APP_VERSION = "v0.02";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -8998,4 +9039,70 @@ switchView = function switchViewWithPermanentNotes(nextView) {
     deleteTabButton.classList.add("hidden");
     addFolderButton.classList.add("hidden");
   }
+};
+
+
+/* v0.02 guaranteed permanent Notes navigation */
+function ensurePermanentNotesButton() {
+  if (!currentUser || !sidebarTabs) return;
+
+  let button = Array.from(sidebarTabs.querySelectorAll(".tab-button")).find(item =>
+    item.querySelector(".tab-name")?.textContent?.trim() === "Notes"
+  );
+
+  if (!button) {
+    button = createNavigationButton({
+      label: "Notes",
+      mark: "TXT",
+      active: activeView === "notes",
+      onClick: () => switchView("notes")
+    });
+
+    const settingsButton = Array.from(sidebarTabs.querySelectorAll(".tab-button")).find(item =>
+      item.querySelector(".tab-name")?.textContent?.trim() === "Settings"
+    );
+
+    if (settingsButton) {
+      sidebarTabs.insertBefore(button, settingsButton);
+    } else {
+      sidebarTabs.appendChild(button);
+    }
+  }
+
+  button.classList.toggle("active", activeView === "notes");
+}
+
+const v002BaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationV002() {
+  v002BaseRenderNavigation();
+  ensurePermanentNotesButton();
+
+  document.querySelectorAll(".dashboard-build-chip strong, .login-build-chip strong").forEach(el => {
+    el.textContent = APP_VERSION;
+  });
+
+  const bottomVersion = document.getElementById("appVersionBadge");
+  if (bottomVersion) bottomVersion.textContent = APP_VERSION;
+};
+
+const v002BaseRenderCurrentView = renderCurrentView;
+renderCurrentView = function renderCurrentViewV002() {
+  if (activeView === "notes") {
+    renderNotesPage();
+    return;
+  }
+
+  v002BaseRenderCurrentView();
+};
+
+const v002BaseSwitchView = switchView;
+switchView = function switchViewV002(nextView) {
+  if (nextView === "notes") {
+    activeView = "notes";
+    renderNavigation();
+    animateContentRefresh();
+    return;
+  }
+
+  return v002BaseSwitchView(nextView);
 };

@@ -415,3 +415,14 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Notes and uploaded files save with the signed-in account through the existing Supabase-backed cloud snapshot.
 - Added a website version badge at the bottom. Current version: `v0.01`.
 - Future website updates should increment the version (`v0.02`, `v0.03`, etc.).
+
+
+## v0.02 — Feature visibility / organizer fix
+- Fixed the actual folder workspace code path instead of relying only on late wrappers.
+- Images / Icons now show New Folder and can move images/icons into named inner folders.
+- Models now show New Folder and can move models into named inner folders.
+- Every other normal folder now shows Upload Files and New Folder for file organization.
+- Fixed folder lookup so uploads/renames work while inside `folder:<tab>:<folder>` views.
+- Permanent Notes tab is guaranteed after navigation renders and cannot be deleted.
+- Version UI now appears on the login screen, dashboard header, and bottom badge.
+- Current build is `v0.02`.
