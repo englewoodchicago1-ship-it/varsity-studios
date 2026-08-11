@@ -8239,3 +8239,18 @@ body.auth-locked #loginView,
     max-width: 430px !important;
   }
 }
+
+
+/* Make Your Profile clearly visible in Settings */
+.profile-picture-settings-panel {
+  order: -100;
+  border-color: color-mix(in srgb, var(--red-bright) 28%, var(--border));
+}
+
+.profile-picture-settings-panel .settings-heading h3 {
+  font-size: 1rem;
+}
+
+.profile-picture-settings-panel .settings-heading p {
+  max-width: 620px;
+}

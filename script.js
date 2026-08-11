@@ -7758,3 +7758,69 @@ renderSettingsPage = function renderSettingsPageWithProfilePicture() {
 
   updateProfilePictureUI();
 };
+
+
+/* Final profile settings visibility wrapper */
+const finalProfileSettingsBase = renderSettingsPage;
+renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
+  finalProfileSettingsBase();
+
+  const settingsPage = tabContent.querySelector(".settings-page");
+  if (!settingsPage) return;
+
+  let panel = settingsPage.querySelector(".profile-picture-settings-panel");
+
+  if (!panel) {
+    panel = document.createElement("section");
+    panel.className = "settings-panel profile-picture-settings-panel";
+    panel.innerHTML = `
+      <div class="settings-heading">
+        <div>
+          <span class="dashboard-kicker">YOUR PROFILE</span>
+          <h3>Your Profile</h3>
+          <p>Upload or change the profile picture saved to your account.</p>
+        </div>
+      </div>
+
+      <div class="profile-picture-settings-content">
+        <div class="profile-picture-preview">
+          <img class="profile-avatar profile-avatar-large" data-profile-avatar src="${escapeAttribute(getSavedProfilePicture())}" alt="Profile picture preview" />
+        </div>
+
+        <div class="profile-picture-settings-copy">
+          <strong>${escapeHtml(getSignedInUser().displayName)}</strong>
+          <small data-profile-picture-status>
+            ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Custom profile picture" : "Using Varsity Studios logo"}
+          </small>
+
+          <div class="profile-picture-settings-actions">
+            <button id="changeProfilePictureButton" class="primary-button compact" type="button">
+              ${accountStorageGet(PROFILE_PICTURE_KEY) ? "Change profile picture" : "Upload profile picture"}
+            </button>
+
+            <button id="removeProfilePictureButton" class="secondary-button compact" type="button">
+              Use Varsity logo
+            </button>
+          </div>
+
+          <p class="profile-picture-help">
+            Choose a PNG, JPG, WEBP, or GIF from your device.
+          </p>
+        </div>
+      </div>
+    `;
+
+    settingsPage.insertBefore(panel, settingsPage.firstElementChild);
+  }
+
+  panel.querySelector("#changeProfilePictureButton")?.addEventListener("click", openProfilePicturePicker);
+
+  panel.querySelector("#removeProfilePictureButton")?.addEventListener("click", () => {
+    accountStorageRemove(PROFILE_PICTURE_KEY);
+    updateProfilePictureUI();
+    scheduleCloudSave();
+    renderSettingsPage();
+  });
+
+  updateProfilePictureUI();
+};

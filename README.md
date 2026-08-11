@@ -368,3 +368,8 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - The login view now uses a full-screen grid and centers the actual login card directly.
 - Previous parent grid/flex positioning can no longer keep the card stuck on the left.
 - Desktop and mobile use the same centered login behavior.
+
+
+## Your Profile visibility fix
+- Ensures the Your Profile section is always injected into Settings after all other settings render wrappers.
+- Keeps Upload profile picture / Change profile picture available for Owner, Member, and User accounts.
