@@ -9380,3 +9380,220 @@ body.auth-unlocked .page-heading {
     display: none;
   }
 }
+
+/* ================= v0.08 DARK CONTROL PANEL UI REVAMP ================= */
+
+:root {
+  --v008-bg: #0b0f14;
+  --v008-panel: #111720;
+  --v008-panel-2: #151c27;
+  --v008-border: #26313e;
+  --v008-border-soft: #1d2732;
+  --v008-text: #edf3fb;
+  --v008-muted: #8c9aae;
+  --v008-accent: #6f9fe0;
+}
+
+html, body { background: var(--v008-bg) !important; }
+body, button, input, select, textarea {
+  font-family: var(--user-font-family, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif) !important;
+}
+
+body::before, body::after, .background-glow, .side-v-logo, .side-v-logos,
+.background-v, .dashboard-background-v, .login-background-title {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* LOGIN */
+#loginView.login-view {
+  position: fixed !important;
+  inset: 0 !important;
+  min-height: 100dvh !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 92px 20px 32px !important;
+  background: var(--v008-bg) !important;
+}
+
+.revamp-login-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 20;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(18px, calc((100vw - 1040px) / 2));
+  border-bottom: 1px solid var(--v008-border-soft);
+  background: rgba(11, 15, 20, 0.97);
+}
+
+.revamp-login-brand { display:flex; align-items:center; gap:9px; color:var(--v008-text); }
+.revamp-login-brand img { width:28px; height:28px; object-fit:contain; }
+.revamp-login-brand strong { font-size:.76rem; }
+.revamp-login-version {
+  padding:5px 8px; border:1px solid var(--v008-border); border-radius:7px;
+  color:var(--v008-muted); background:#111720; font-size:.58rem; font-weight:750;
+}
+
+#loginView .login-card {
+  width:min(410px, calc(100vw - 32px)) !important;
+  max-width:410px !important;
+  margin:0 !important;
+  padding:28px 26px 24px !important;
+  border:1px solid var(--v008-border) !important;
+  border-radius:9px !important;
+  background:#12171f !important;
+  box-shadow:0 18px 60px rgba(0,0,0,.28) !important;
+}
+
+#loginView .brand-centered {
+  display:grid !important; justify-items:center !important; gap:10px !important;
+  margin-bottom:23px !important; text-align:center !important;
+}
+#loginView .brand-centered .brand-logo {
+  width:66px !important; height:66px !important; object-fit:contain !important;
+  filter:grayscale(1) brightness(1.6) !important;
+}
+#loginView .eyebrow { display:none !important; }
+#loginView h1 {
+  margin:0 !important; color:var(--v008-text) !important; font-size:1.22rem !important;
+  font-weight:760 !important; letter-spacing:-.02em !important;
+}
+#loginView .build-chip {
+  margin:7px auto 0 !important; min-height:0 !important; padding:0 !important;
+  border:0 !important; background:transparent !important; box-shadow:none !important;
+}
+#loginView .build-chip .build-dot { display:none !important; }
+#loginView .build-chip strong, #loginView .build-chip small {
+  color:var(--v008-muted) !important; font-size:.59rem !important;
+  font-weight:550 !important; letter-spacing:0 !important; text-transform:none !important;
+}
+#loginView .build-chip strong::after { content:" • "; }
+
+.login-form label { color:#cfd8e4 !important; font-size:.67rem !important; font-weight:700 !important; }
+.login-form input {
+  height:40px !important; border:1px solid #222c37 !important; border-radius:6px !important;
+  color:var(--v008-text) !important; background:#0e131a !important; box-shadow:none !important;
+}
+.login-form input:focus { border-color:#456f9f !important; box-shadow:0 0 0 2px rgba(69,111,159,.14) !important; }
+#togglePassword {
+  border:1px solid var(--v008-border) !important; border-radius:5px !important;
+  color:var(--v008-muted) !important; background:#141b24 !important;
+}
+#loginView .primary-button {
+  min-height:40px !important; border:1px solid #4879b2 !important; border-radius:6px !important;
+  background:#356ca8 !important; box-shadow:none !important; color:#fff !important;
+}
+
+/* SHELL */
+#dashboardView.dashboard-view { min-height:100dvh !important; background:var(--v008-bg) !important; }
+.sidebar, .topbar {
+  border-color:var(--v008-border-soft) !important; background:rgba(11,15,20,.97) !important;
+  box-shadow:none !important; backdrop-filter:blur(12px);
+}
+.topbar { min-height:52px !important; }
+.sidebar-brand .brand-logo, #signedInBrandLogo {
+  width:32px !important; height:32px !important; border-radius:7px !important;
+  border:1px solid var(--v008-border) !important; background:#111720 !important;
+}
+.dashboard-main, .dashboard-content, #tabContent { background:transparent !important; }
+
+.page-title, #pageTitle, .content-title, #contentTitle, h1, h2, h3, h4 {
+  color:var(--v008-text) !important; letter-spacing:-.02em !important;
+}
+.page-subtitle, #pageSubtitle, small, .muted, .dashboard-kicker, .eyebrow { color:var(--v008-muted) !important; }
+
+.content-shell, .content-frame, .dashboard-panel, .settings-panel, .welcome-panel,
+.dashboard-section, .folder-card, .folder-workspace, .workspace-panel,
+.profile-picture-settings-panel, .saved-note-card, .dashboard-stat-card,
+.quick-action, .website-link-card, .developer-panel, .release-card, .team-card,
+.system-card, .folder-detail-section {
+  border:1px solid var(--v008-border) !important;
+  border-radius:9px !important;
+  background:var(--v008-panel) !important;
+  box-shadow:none !important;
+}
+
+/* NAV */
+.tab-button {
+  min-height:34px !important; border:1px solid transparent !important; border-radius:7px !important;
+  color:#aeb9c7 !important; background:transparent !important; box-shadow:none !important;
+}
+.tab-button:hover { color:#e5edf6 !important; background:#111820 !important; border-color:#1f2a35 !important; }
+.tab-button.active {
+  color:#eef5ff !important; background:#172332 !important; border-color:#355b83 !important;
+  box-shadow:inset 3px 0 0 #6f9fe0 !important;
+}
+.tab-mark, .quick-action-icon, .folder-symbol, .workspace-item-index, .model-file-icon {
+  color:var(--v008-accent) !important; background:#172333 !important; border-color:#2b3e52 !important;
+}
+
+/* BUTTONS + FIELDS */
+.primary-button, .add-animation-button, button.primary-button {
+  border:1px solid #4b78a8 !important; border-radius:6px !important;
+  color:#f4f8fc !important; background:#315f91 !important; box-shadow:none !important;
+}
+.primary-button:hover, .add-animation-button:hover { background:#376b9f !important; }
+
+.secondary-button, button.secondary-button, .workspace-edit-button, .workspace-download-button,
+.saved-note-actions button, .asset-subfolder-actions button, .animation-subfolder-actions button {
+  border:1px solid var(--v008-border) !important; border-radius:6px !important;
+  color:#c4cfdb !important; background:#141b24 !important; box-shadow:none !important;
+}
+.danger-button, .folder-delete, .workspace-delete-button, .delete-animation-button {
+  border-color:#66343a !important; color:#e28a95 !important; background:#241519 !important;
+}
+input, textarea, select {
+  border:1px solid #283440 !important; border-radius:6px !important;
+  color:var(--v008-text) !important; background:#0e141b !important; box-shadow:none !important;
+}
+input:focus, textarea:focus, select:focus {
+  border-color:#4e7399 !important; box-shadow:0 0 0 2px rgba(78,115,153,.13) !important; outline:0 !important;
+}
+
+/* SEARCH / SETTINGS */
+.dashboard-search-button, .dashboard-search-card {
+  border-color:var(--v008-border) !important; background:var(--v008-panel) !important;
+}
+.dashboard-search-result:hover { border-color:#334152 !important; background:#161e28 !important; }
+.dashboard-search-result-icon { color:var(--v008-accent) !important; background:#172333 !important; }
+
+.colorway-grid, .custom-background-panel, .pro-motion-settings-panel,
+.ui-style-version-panel, .side-v-settings-panel { display:none !important; }
+
+.v007-setting-row, .v007-slider-row, .account-directory-row, .profile-picture-settings-content {
+  border-color:var(--v008-border) !important; background:#0f151c !important;
+}
+
+/* FOLDERS */
+.folder-visual, .custom-folder-icon, .organizer-icon-preview,
+.asset-subfolder-icon, .animation-subfolder-icon {
+  border-color:#2e3b49 !important; background:#15202c !important;
+}
+.folder-panel, .asset-subfolder, .animation-subfolder, .workspace-animation-subfolder {
+  border-color:var(--v008-border) !important; background:#0f151c !important;
+}
+.workspace-list-item, .workspace-media-item {
+  border:1px solid #222d38 !important; border-radius:7px !important; background:#0f151c !important;
+}
+
+/* VERSION / DIALOGS */
+.build-chip, .app-version-badge {
+  border:1px solid #26313d !important; border-radius:6px !important;
+  color:#8593a3 !important; background:#111720 !important; box-shadow:none !important;
+}
+.build-chip .build-dot { background:#6f9fe0 !important; box-shadow:none !important; }
+dialog::backdrop { background:rgba(0,0,0,.68) !important; backdrop-filter:blur(5px) !important; }
+.dialog-card {
+  border:1px solid var(--v008-border) !important; border-radius:9px !important;
+  background:#111720 !important; box-shadow:0 18px 60px rgba(0,0,0,.28) !important;
+}
+
+@media (max-width:860px) {
+  .revamp-login-header { padding-inline:14px; }
+  #loginView.login-view { padding-top:76px !important; }
+  #loginView .login-card { width:min(390px, calc(100vw - 24px)) !important; padding:23px 18px 20px !important; }
+  .dashboard-main { background:var(--v008-bg) !important; }
+}

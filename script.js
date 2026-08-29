@@ -8315,7 +8315,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.07";
+const APP_VERSION = "v0.08";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -10074,3 +10074,65 @@ renderNavigation = function renderNavigationV007() {
 };
 
 applyUiPersonalization();
+
+/* v0.08 dark control-panel revamp */
+const REVAMP_VERSION = "v0.08";
+
+function applyV008NeutralTheme() {
+  const root = document.documentElement;
+  root.style.setProperty("--red", "#3f6ea8");
+  root.style.setProperty("--red-bright", "#6f9fe0");
+  root.style.setProperty("--red-dark", "#274766");
+  root.style.setProperty("--theme-glow", "rgba(74, 116, 166, 0.22)");
+  root.style.setProperty("--theme-top", "#11161d");
+  root.style.setProperty("--theme-middle", "#0c1016");
+  root.style.setProperty("--custom-page-background", "#0b0f14");
+  document.body.classList.remove("custom-background-enabled");
+  document.body.classList.add("v008-neutral-ui");
+}
+
+function removeLegacyAppearanceControls() {
+  if (activeView !== "settings") return;
+  const settingsPage = tabContent.querySelector(".settings-page");
+  if (!settingsPage) return;
+
+  settingsPage.querySelectorAll(".settings-panel").forEach(panel => {
+    const text = (panel.textContent || "").toLowerCase();
+    if (
+      text.includes("colorway") ||
+      text.includes("background color wheel") ||
+      text.includes("custom background") ||
+      text.includes("ui style versions") ||
+      text.includes("visual themes and 3d background scene") ||
+      text.includes("background motion") ||
+      text.includes("side v logos")
+    ) {
+      panel.remove();
+    }
+  });
+}
+
+const v008BaseApplyDashboardSettings = applyDashboardSettings;
+applyDashboardSettings = function applyDashboardSettingsV008() {
+  try { v008BaseApplyDashboardSettings(); } catch (error) {}
+  applyV008NeutralTheme();
+};
+
+const v008BaseRenderSettingsPage = renderSettingsPage;
+renderSettingsPage = function renderSettingsPageV008() {
+  v008BaseRenderSettingsPage();
+  removeLegacyAppearanceControls();
+  applyV008NeutralTheme();
+};
+
+const v008BaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationV008() {
+  v008BaseRenderNavigation();
+  applyV008NeutralTheme();
+  if (typeof syncVisibleBuildVersion === "function") syncVisibleBuildVersion();
+};
+
+try {
+  applyV008NeutralTheme();
+  if (typeof syncVisibleBuildVersion === "function") syncVisibleBuildVersion();
+} catch (error) {}

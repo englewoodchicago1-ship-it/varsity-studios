@@ -472,3 +472,13 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Added an account directory showing Drxco, Bj, and Neco with roles (no passwords).
 - Added authenticated password changing through Supabase `auth.updateUser`.
 - Current build: `v0.07`.
+
+
+## v0.08 — Dark control-panel UI revamp
+- New neutral dark management-dashboard look based on the provided references.
+- Removed the old red/purple/glow-heavy styling direction.
+- Uses charcoal panels, thin borders, subtle blue-gray accents, compact buttons, and cleaner spacing.
+- Login is now a simple centered management-style card with a small top brand bar.
+- Old colorway/custom-background/visual-theme appearance controls are removed from Settings.
+- Existing Supabase login, cloud saves, Notes, uploads, folders, search, fonts, sizing, account list, password changes, permissions, and profile-picture features remain.
+- Current build: v0.08.
