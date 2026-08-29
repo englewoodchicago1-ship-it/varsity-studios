@@ -500,3 +500,11 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Removed the actual `.pro-cursor-glow-element` and `.pro-cursor-trail-dot` elements that were responsible for the remaining cursor dot.
 - Added a safety observer so cursor/crosshair effect elements are deleted if older code tries to recreate them.
 - Current build: `v0.10`.
+
+
+## v0.11 — Red selection system
+- Changed selected/unselected UI states to match the provided reference.
+- Selected controls now use a dark red fill with a brighter muted-red outline.
+- Unselected controls use near-black/dark gray with a subtle gray border.
+- Replaced the remaining light-blue selection/accent language with dark red, black, and gray.
+- Current build: `v0.11`.

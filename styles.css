@@ -9722,3 +9722,207 @@ input[type="button"],
 input[type="submit"] {
   cursor: pointer;
 }
+
+
+/* =========================================================
+   v0.11 — RED / BLACK / GRAY SELECTION STATES
+   Inspired by the selected/unselected reference:
+   selected = dark red fill + brighter red outline
+   unselected = near-black fill + dark gray outline
+   ========================================================= */
+
+:root {
+  --select-bg: #2a1115;
+  --select-bg-hover: #35161b;
+  --select-border: #7b2c35;
+  --select-border-strong: #9a3844;
+  --select-text: #f2e8ea;
+
+  --unselect-bg: #0d1014;
+  --unselect-bg-hover: #13171c;
+  --unselect-border: #2a3038;
+  --unselect-border-hover: #3a424d;
+  --unselect-text: #c6ccd3;
+
+  --ui-red-muted: #7b2c35;
+  --ui-red-dark: #42191f;
+}
+
+/* Generic button/tab selection treatment */
+.tab-button,
+.colorway-option,
+.quick-action,
+.dashboard-search-result,
+.folder-card,
+.workspace-list-item,
+.workspace-media-item,
+.saved-note-card,
+.account-directory-row,
+.asset-subfolder,
+.animation-subfolder,
+.workspace-animation-subfolder,
+.settings-panel {
+  border-color: var(--unselect-border) !important;
+}
+
+/* Unselected navigation/tabs */
+.tab-button {
+  color: var(--unselect-text) !important;
+  background: var(--unselect-bg) !important;
+  border: 1px solid var(--unselect-border) !important;
+  box-shadow: none !important;
+}
+
+.tab-button:hover {
+  color: #eef0f2 !important;
+  background: var(--unselect-bg-hover) !important;
+  border-color: var(--unselect-border-hover) !important;
+}
+
+/* Selected navigation/tabs */
+.tab-button.active,
+.tab-button[aria-selected="true"],
+.tab-button.selected,
+button.selected,
+button.active {
+  color: var(--select-text) !important;
+  background: var(--select-bg) !important;
+  border-color: var(--select-border-strong) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(154, 56, 68, 0.18),
+    0 0 0 1px rgba(123, 44, 53, 0.08) !important;
+}
+
+/* Small marks/icons inside selected tabs */
+.tab-button.active .tab-mark,
+.tab-button[aria-selected="true"] .tab-mark,
+.tab-button.selected .tab-mark {
+  color: #d98b95 !important;
+  background: var(--ui-red-dark) !important;
+  border-color: var(--select-border) !important;
+}
+
+/* Buttons that behave like segmented/select controls */
+.segmented-control button,
+.view-toggle button,
+.filter-button,
+.mode-button,
+.format-button,
+.selection-button,
+.chip-button,
+.toggle-button {
+  color: var(--unselect-text) !important;
+  background: var(--unselect-bg) !important;
+  border: 1px solid var(--unselect-border) !important;
+  box-shadow: none !important;
+}
+
+.segmented-control button:hover,
+.view-toggle button:hover,
+.filter-button:hover,
+.mode-button:hover,
+.format-button:hover,
+.selection-button:hover,
+.chip-button:hover,
+.toggle-button:hover {
+  background: var(--unselect-bg-hover) !important;
+  border-color: var(--unselect-border-hover) !important;
+}
+
+.segmented-control button.active,
+.segmented-control button.selected,
+.view-toggle button.active,
+.view-toggle button.selected,
+.filter-button.active,
+.filter-button.selected,
+.mode-button.active,
+.mode-button.selected,
+.format-button.active,
+.format-button.selected,
+.selection-button.active,
+.selection-button.selected,
+.chip-button.active,
+.chip-button.selected,
+.toggle-button.active,
+.toggle-button.selected {
+  color: var(--select-text) !important;
+  background: var(--select-bg) !important;
+  border-color: var(--select-border-strong) !important;
+}
+
+/* Folder/search/item hover stays neutral-dark rather than blue */
+.folder-card:hover,
+.quick-action:hover,
+.workspace-list-item:hover,
+.workspace-media-item:hover,
+.dashboard-search-result:hover {
+  background: #13171c !important;
+  border-color: #3a424d !important;
+}
+
+/* Remove the remaining blue accent language from common UI */
+.primary-button,
+.add-animation-button,
+button.primary-button {
+  background: #481a21 !important;
+  border-color: #7b2c35 !important;
+  color: #f5ecee !important;
+}
+
+.primary-button:hover,
+.add-animation-button:hover,
+button.primary-button:hover {
+  background: #572028 !important;
+  border-color: #943844 !important;
+}
+
+.dashboard-search-result-icon,
+.tab-mark,
+.quick-action-icon,
+.folder-symbol,
+.workspace-item-index,
+.model-file-icon {
+  color: #c97b85 !important;
+  background: #2a1115 !important;
+  border-color: #512027 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #7b2c35 !important;
+  box-shadow: 0 0 0 2px rgba(123, 44, 53, 0.13) !important;
+}
+
+/* Neutral gray pills/buttons */
+.secondary-button,
+button.secondary-button,
+.workspace-edit-button,
+.workspace-download-button,
+.saved-note-actions button,
+.asset-subfolder-actions button,
+.animation-subfolder-actions button {
+  background: #111419 !important;
+  border-color: #2b3139 !important;
+  color: #c7ccd2 !important;
+}
+
+.secondary-button:hover,
+button.secondary-button:hover,
+.workspace-edit-button:hover,
+.workspace-download-button:hover {
+  background: #171b21 !important;
+  border-color: #3b434d !important;
+}
+
+/* Version/status accents use muted red instead of blue */
+.build-chip .build-dot {
+  background: #a03b47 !important;
+}
+
+.dashboard-search-button span,
+.v007-slider-row output,
+.account-directory-avatar,
+.account-directory-row em {
+  color: #c97882 !important;
+}
