@@ -8305,7 +8305,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.11";
+const APP_VERSION = "v0.12";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;

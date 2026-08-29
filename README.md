@@ -508,3 +508,12 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Unselected controls use near-black/dark gray with a subtle gray border.
 - Replaced the remaining light-blue selection/accent language with dark red, black, and gray.
 - Current build: `v0.11`.
+
+
+## v0.12 — Full red / black / gray theme
+- Updated the entire website palette, not just selected/unselected controls.
+- Whole page now uses black and charcoal backgrounds.
+- Panels/cards use dark gray/near-black surfaces.
+- Accents, icons, selected states, focus borders, and primary buttons use dark/muted red.
+- Removed the remaining blue-gray visual language from the overall page direction.
+- Current build: `v0.12`.

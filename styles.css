@@ -9926,3 +9926,405 @@ button.secondary-button:hover,
 .account-directory-row em {
   color: #c97882 !important;
 }
+
+
+/* =========================================================
+   v0.12 — FULL RED / BLACK / GRAY PAGE THEME
+   Whole site palette, not only selected controls.
+   ========================================================= */
+
+:root {
+  --page-black: #08090b;
+  --page-black-2: #0b0d10;
+  --panel-black: #101216;
+  --panel-black-2: #15181d;
+  --panel-black-3: #1a1d23;
+
+  --line-gray: #2a2f36;
+  --line-gray-soft: #20242a;
+  --text-main: #f2f2f3;
+  --text-muted: #9b9fa6;
+  --text-dim: #6f747c;
+
+  --dark-red: #2a0d11;
+  --dark-red-2: #3a1118;
+  --mid-red: #64202a;
+  --bright-red: #9c3946;
+  --soft-red: #c87580;
+
+  --v008-bg: var(--page-black);
+  --v008-panel: var(--panel-black);
+  --v008-panel-2: var(--panel-black-2);
+  --v008-border: var(--line-gray);
+  --v008-border-soft: var(--line-gray-soft);
+  --v008-text: var(--text-main);
+  --v008-muted: var(--text-muted);
+  --v008-accent: var(--soft-red);
+
+  --select-bg: var(--dark-red-2);
+  --select-bg-hover: #45151d;
+  --select-border: var(--mid-red);
+  --select-border-strong: var(--bright-red);
+  --select-text: #fff3f5;
+
+  --unselect-bg: #0d0f12;
+  --unselect-bg-hover: #14171b;
+  --unselect-border: #2a2f36;
+  --unselect-border-hover: #3a4048;
+  --unselect-text: #c8cbd0;
+}
+
+/* Entire page */
+html,
+body,
+#dashboardView,
+#loginView,
+.dashboard-main,
+.dashboard-content,
+#tabContent,
+.content-area,
+.main-content {
+  background: var(--page-black) !important;
+  color: var(--text-main) !important;
+}
+
+body {
+  background:
+    radial-gradient(circle at 78% 8%, rgba(90, 22, 31, 0.14), transparent 30%),
+    linear-gradient(180deg, #0a0b0d 0%, #08090b 55%, #07080a 100%) !important;
+}
+
+/* Top bar / sidebar */
+.sidebar,
+.topbar,
+.revamp-login-header {
+  background: #0b0d10 !important;
+  border-color: var(--line-gray-soft) !important;
+}
+
+.sidebar {
+  box-shadow: inset -1px 0 0 rgba(255,255,255,0.01) !important;
+}
+
+.topbar {
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.01) !important;
+}
+
+/* Main cards / containers */
+.content-shell,
+.content-frame,
+.dashboard-panel,
+.settings-panel,
+.welcome-panel,
+.dashboard-section,
+.folder-card,
+.folder-workspace,
+.workspace-panel,
+.profile-picture-settings-panel,
+.saved-note-card,
+.dashboard-stat-card,
+.quick-action,
+.website-link-card,
+.developer-panel,
+.release-card,
+.team-card,
+.system-card,
+.folder-detail-section,
+.asset-subfolder,
+.animation-subfolder,
+.workspace-animation-subfolder,
+.workspace-list-item,
+.workspace-media-item,
+.account-directory-row {
+  background: var(--panel-black) !important;
+  border-color: var(--line-gray) !important;
+  box-shadow: none !important;
+}
+
+.dashboard-stat-card,
+.quick-action,
+.folder-card,
+.workspace-list-item,
+.workspace-media-item {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0)),
+    var(--panel-black) !important;
+}
+
+/* Secondary darker inner areas */
+.folder-panel,
+.folder-panel-inner,
+.asset-subfolder-heading,
+.animation-subfolder-heading,
+.profile-picture-settings-content,
+.v007-setting-row,
+.v007-slider-row,
+.change-password-form,
+.notes-form,
+.dashboard-search-card,
+.dashboard-search-input-row,
+.login-card {
+  background: #0f1115 !important;
+  border-color: var(--line-gray) !important;
+}
+
+/* Headings/text */
+h1, h2, h3, h4,
+.page-title, #pageTitle,
+.content-title, #contentTitle,
+strong {
+  color: var(--text-main) !important;
+}
+
+.page-subtitle, #pageSubtitle,
+small, .muted,
+.dashboard-kicker,
+.eyebrow,
+.folder-status,
+.workspace-item-main span,
+.workspace-item-main p,
+.saved-note-card small,
+.saved-note-card p {
+  color: var(--text-muted) !important;
+}
+
+/* Red accent text */
+.dashboard-kicker,
+.dialog-kicker,
+.account-directory-row em,
+.v007-slider-row output,
+.dashboard-search-button span,
+.folder-description-label {
+  color: var(--soft-red) !important;
+}
+
+/* Navigation */
+.tab-button {
+  background: #0d0f12 !important;
+  border: 1px solid var(--line-gray-soft) !important;
+  color: #c5c8cc !important;
+}
+
+.tab-button:hover {
+  background: #14171b !important;
+  border-color: #353b43 !important;
+  color: #f1f1f2 !important;
+}
+
+.tab-button.active,
+.tab-button.selected,
+.tab-button[aria-selected="true"] {
+  background:
+    linear-gradient(180deg, rgba(156,57,70,0.09), rgba(156,57,70,0.03)),
+    var(--dark-red-2) !important;
+  border-color: var(--bright-red) !important;
+  color: #fff4f6 !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(156,57,70,0.10),
+    0 0 0 1px rgba(156,57,70,0.05) !important;
+}
+
+.tab-mark,
+.quick-action-icon,
+.folder-symbol,
+.workspace-item-index,
+.model-file-icon,
+.dashboard-search-result-icon,
+.account-directory-avatar {
+  background: var(--dark-red) !important;
+  border-color: #4c1b22 !important;
+  color: var(--soft-red) !important;
+}
+
+/* Primary actions */
+.primary-button,
+.add-animation-button,
+button.primary-button {
+  background:
+    linear-gradient(180deg, #5a1b24, #45151c) !important;
+  border-color: #7a2c37 !important;
+  color: #fff3f5 !important;
+}
+
+.primary-button:hover,
+.add-animation-button:hover,
+button.primary-button:hover {
+  background:
+    linear-gradient(180deg, #6a222d, #511922) !important;
+  border-color: var(--bright-red) !important;
+}
+
+/* Neutral actions */
+.secondary-button,
+button.secondary-button,
+.workspace-edit-button,
+.workspace-download-button,
+.saved-note-actions button,
+.asset-subfolder-actions button,
+.animation-subfolder-actions button,
+.dashboard-search-button {
+  background: #121419 !important;
+  border-color: var(--line-gray) !important;
+  color: #c8ccd1 !important;
+}
+
+.secondary-button:hover,
+button.secondary-button:hover,
+.workspace-edit-button:hover,
+.workspace-download-button:hover,
+.dashboard-search-button:hover {
+  background: #181b20 !important;
+  border-color: #3a414a !important;
+}
+
+/* Danger */
+.danger-button,
+.folder-delete,
+.workspace-delete-button,
+.delete-animation-button {
+  background: #241014 !important;
+  border-color: #68303a !important;
+  color: #e58c97 !important;
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+  background: #0b0d10 !important;
+  border-color: #2a3037 !important;
+  color: var(--text-main) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #686d74 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #7a2c37 !important;
+  box-shadow: 0 0 0 2px rgba(122,44,55,0.13) !important;
+}
+
+/* Search results */
+.dashboard-search-result {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.dashboard-search-result:hover {
+  background: #14171b !important;
+  border-color: #353b43 !important;
+}
+
+/* Folder visuals */
+.folder-visual,
+.custom-folder-icon,
+.organizer-icon-preview,
+.asset-subfolder-icon,
+.animation-subfolder-icon {
+  background:
+    linear-gradient(180deg, #241015, #171014) !important;
+  border-color: #51212a !important;
+}
+
+/* Version UI */
+.build-chip,
+.app-version-badge,
+.revamp-login-version {
+  background: #101216 !important;
+  border-color: #2d3239 !important;
+  color: #9da2aa !important;
+}
+
+.build-chip .build-dot {
+  background: var(--bright-red) !important;
+}
+
+/* Login */
+#loginView.login-view {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(92, 23, 33, 0.15), transparent 34%),
+    var(--page-black) !important;
+}
+
+#loginView .login-card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0)),
+    #101216 !important;
+  border-color: #2b3037 !important;
+}
+
+#loginView .brand-centered .brand-logo {
+  filter: grayscale(1) brightness(1.55) contrast(1.05) !important;
+}
+
+/* Dialogs */
+.dialog-card {
+  background: #101216 !important;
+  border-color: #2c3239 !important;
+}
+
+/* Selected / segmented controls */
+.segmented-control button,
+.view-toggle button,
+.filter-button,
+.mode-button,
+.format-button,
+.selection-button,
+.chip-button,
+.toggle-button {
+  background: #0d0f12 !important;
+  border-color: #2a2f36 !important;
+  color: #c7cbd0 !important;
+}
+
+.segmented-control button.active,
+.segmented-control button.selected,
+.view-toggle button.active,
+.view-toggle button.selected,
+.filter-button.active,
+.filter-button.selected,
+.mode-button.active,
+.mode-button.selected,
+.format-button.active,
+.format-button.selected,
+.selection-button.active,
+.selection-button.selected,
+.chip-button.active,
+.chip-button.selected,
+.toggle-button.active,
+.toggle-button.selected {
+  background: var(--dark-red-2) !important;
+  border-color: var(--bright-red) !important;
+  color: #fff4f6 !important;
+}
+
+/* Remove blue leftovers */
+[style*="#6f9fe0"],
+[style*="#3f6ea8"],
+[style*="#315f91"],
+[style*="#356ca8"] {
+  --red: var(--bright-red) !important;
+}
+
+/* Hover polish */
+.dashboard-stat-card:hover,
+.quick-action:hover,
+.folder-card:hover,
+.workspace-list-item:hover,
+.workspace-media-item:hover,
+.account-directory-row:hover {
+  background: var(--panel-black-2) !important;
+  border-color: #3a4048 !important;
+}
+
+/* Mobile */
+@media (max-width: 860px) {
+  .sidebar,
+  .topbar {
+    background: #0b0d10 !important;
+  }
+}
