@@ -517,3 +517,10 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Accents, icons, selected states, focus borders, and primary buttons use dark/muted red.
 - Removed the remaining blue-gray visual language from the overall page direction.
 - Current build: `v0.12`.
+
+
+## v0.13 — Zero-blue cleanup
+- Removed the remaining light-blue/blue-gray palette from login, folders, highlights, borders, icons, focus states, and buttons.
+- Replaced legacy blue/purple constants with dark red, black, charcoal, and neutral gray equivalents.
+- Added a final zero-blue override so older styling layers cannot visually bleed through.
+- Current build: `v0.13`.

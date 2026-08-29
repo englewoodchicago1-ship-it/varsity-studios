@@ -2286,21 +2286,21 @@ const COLORWAYS = {
   },
   blue: {
     name: "Stadium Blue",
-    red: "#1769ff",
-    bright: "#4b8cff",
-    dark: "#0b347d",
-    glow: "rgba(23, 105, 255, 0.55)",
-    top: "#071f52",
-    middle: "#061027"
+    red: "#7a2c37",
+    bright: "#b66a74",
+    dark: "#3a1118",
+    glow: "rgba(122, 44, 55, 0.35)",
+    top: "#210b0f",
+    middle: "#13090b"
   },
   purple: {
     name: "Night Purple",
-    red: "#8d3dff",
-    bright: "#ad72ff",
-    dark: "#44117f",
+    red: "#7a2c37",
+    bright: "#b66a74",
+    dark: "#3a1118",
     glow: "rgba(141, 61, 255, 0.52)",
-    top: "#2b0a52",
-    middle: "#130622"
+    top: "#210b0f",
+    middle: "#13090b"
   },
   green: {
     name: "Field Green",
@@ -4814,8 +4814,8 @@ function normalizeAdvancedOrganizerData() {
 function getOrganizerAccentStyle(accent) {
   const accents = {
     default: "var(--red-bright)",
-    blue: "#4b8cff",
-    purple: "#a66cff",
+    blue: "#b66a74",
+    purple: "#b66a74",
     green: "#42d57d",
     orange: "#ff8b43",
     pink: "#ff65ad",
@@ -8305,7 +8305,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.12";
+const APP_VERSION = "v0.13";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -10067,10 +10067,10 @@ const REVAMP_VERSION = "v0.08";
 
 function applyV008NeutralTheme() {
   const root = document.documentElement;
-  root.style.setProperty("--red", "#3f6ea8");
-  root.style.setProperty("--red-bright", "#6f9fe0");
-  root.style.setProperty("--red-dark", "#274766");
-  root.style.setProperty("--theme-glow", "rgba(74, 116, 166, 0.22)");
+  root.style.setProperty("--red", "#7a2c37");
+  root.style.setProperty("--red-bright", "#b66a74");
+  root.style.setProperty("--red-dark", "#4c1b22");
+  root.style.setProperty("--theme-glow", "rgba(122, 44, 55, 0.14)");
   root.style.setProperty("--theme-top", "#11161d");
   root.style.setProperty("--theme-middle", "#0c1016");
   root.style.setProperty("--custom-page-background", "#0b0f14");
