@@ -22,9 +22,7 @@ const supabaseClient = window.supabase.createClient(
   account identifiers hidden from the frontend source.
 */
 const LOGIN_EMAILS = {
-  ykdrxc: "drxco@varsitystudios.net",
-  rundownbjay: "bj@varsitystudios.net",
-  neco: "neco@varsitystudios.net"
+  ykdrxc: "drxco@varsitystudios.net"
 };
 
 let currentUser = null;
@@ -8315,7 +8313,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.08";
+const APP_VERSION = "v0.09";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -9872,9 +9870,7 @@ document.addEventListener("keydown", event => {
 
 function renderAccountDirectoryRows() {
   const knownAccounts = [
-    { username: "ykdrxc", displayName: "Drxco", role: "Owner" },
-    { username: "rundownbjay", displayName: "Bj", role: "Member" },
-    { username: "neco", displayName: "Neco", role: "User" }
+    { username: "ykdrxc", displayName: "Drxco", role: "Owner" }
   ];
 
   return knownAccounts.map(account => `
@@ -10136,3 +10132,62 @@ try {
   applyV008NeutralTheme();
   if (typeof syncVisibleBuildVersion === "function") syncVisibleBuildVersion();
 } catch (error) {}
+
+
+/* =========================================================
+   v0.09 OWNER-ONLY / PERMANENT VERTICAL NAV / NO CURSOR GLOW
+   ========================================================= */
+
+function enforceV009PermanentLayout() {
+  document.body.classList.add("v009-vertical-nav");
+  document.body.classList.remove("nav-horizontal", "tabs-horizontal", "horizontal-tabs");
+
+  // Permanently disable cursor/crosshair glow/trail effects.
+  document.body.classList.add("cursor-effects-disabled");
+  document.documentElement.style.setProperty("--cursor-glow-opacity", "0");
+  document.documentElement.style.setProperty("--cursor-trail-opacity", "0");
+
+  document.querySelectorAll(
+    ".cursor-glow, .cursor-trail, .mouse-glow, .crosshair-glow, .pointer-glow, .cursor-orb, .cursor-dot"
+  ).forEach(element => element.remove());
+}
+
+const v009BaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationV009() {
+  v009BaseRenderNavigation();
+  enforceV009PermanentLayout();
+};
+
+const v009BaseRenderSettingsPage = renderSettingsPage;
+renderSettingsPage = function renderSettingsPageV009() {
+  v009BaseRenderSettingsPage();
+
+  const settingsPage = tabContent.querySelector(".settings-page");
+  if (settingsPage) {
+    settingsPage.querySelectorAll(".settings-panel").forEach(panel => {
+      const text = (panel.textContent || "").toLowerCase();
+
+      if (
+        text.includes("horizontal") ||
+        text.includes("vertical tabs") ||
+        text.includes("navigation position") ||
+        text.includes("cursor glow") ||
+        text.includes("cursor trail") ||
+        text.includes("crosshair") ||
+        text.includes("magnetic buttons") ||
+        text.includes("click ripples")
+      ) {
+        panel.remove();
+      }
+    });
+  }
+
+  enforceV009PermanentLayout();
+};
+
+try {
+  enforceV009PermanentLayout();
+  if (typeof syncVisibleBuildVersion === "function") syncVisibleBuildVersion();
+} catch (error) {
+  console.warn("[v0.09] Permanent layout sync deferred.", error);
+}

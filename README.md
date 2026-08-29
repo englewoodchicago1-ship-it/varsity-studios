@@ -482,3 +482,12 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Old colorway/custom-background/visual-theme appearance controls are removed from Settings.
 - Existing Supabase login, cloud saves, Notes, uploads, folders, search, fonts, sizing, account list, password changes, permissions, and profile-picture features remain.
 - Current build: v0.08.
+
+
+## v0.09 — Owner-only + permanent layout
+- Removed Bj and Neco from website login access; only `ykdrxc` remains in the frontend username mapping.
+- Account directory now shows only Drxco / ykdrxc.
+- Navigation is permanently vertical on desktop.
+- Removed the cursor/crosshair glow and cursor-trail style effects permanently.
+- Removed settings that would switch navigation back to horizontal or re-enable cursor effects.
+- Current build: `v0.09`.
