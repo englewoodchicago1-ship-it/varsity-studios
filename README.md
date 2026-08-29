@@ -491,3 +491,12 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Removed the cursor/crosshair glow and cursor-trail style effects permanently.
 - Removed settings that would switch navigation back to horizontal or re-enable cursor effects.
 - Current build: `v0.09`.
+
+
+## v0.10 — Settings removed / cursor dot removed
+- Removed the Settings tab from navigation.
+- Settings is also removed from dashboard search and direct routing falls back to Dashboard.
+- Disabled the pro-motion cursor glow and trail at the source.
+- Removed the actual `.pro-cursor-glow-element` and `.pro-cursor-trail-dot` elements that were responsible for the remaining cursor dot.
+- Added a safety observer so cursor/crosshair effect elements are deleted if older code tries to recreate them.
+- Current build: `v0.10`.

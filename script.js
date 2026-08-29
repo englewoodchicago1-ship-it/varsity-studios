@@ -2415,15 +2415,7 @@ function renderNavigation() {
     active: activeView === "developer",
     onClick: () => switchView("developer")
   }));
-
-  sidebarTabs.appendChild(createNavigationButton({
-    label: "Settings",
-    mark: "⚙",
-    active: activeView === "settings",
-    onClick: () => switchView("settings")
-  }));
-
-  sidebarTabs.appendChild(createNavigationButton({
+sidebarTabs.appendChild(createNavigationButton({
     label: "Notes",
     mark: "TXT",
     active: activeView === "notes",
@@ -2459,7 +2451,7 @@ function renderCurrentView() {
   if (activeView === "main") return renderMainDashboard();
   if (activeView === "websites") return renderGlobalWebsites();
   if (activeView === "developer") return renderDeveloperHub();
-  if (activeView === "settings") return renderSettingsPage();
+  if (activeView === "settings") { activeView = "main"; return renderMainDashboard(); }
   if (activeView === "notes") return renderNotesPage();
   if (isFolderWorkspace) return renderFolderWorkspace();
 
@@ -6566,7 +6558,7 @@ const defaultProMotionSettings = {
   navIndicator: "glide",
   modalStyle: "scale-blur",
   backgroundMotion: "aurora",
-  cursorGlow: true,
+  cursorGlow: false,
   magneticButtons: true,
   rippleClicks: true,
   depthParallax: true,
@@ -6574,8 +6566,8 @@ const defaultProMotionSettings = {
   animatedProgress: true,
   tiltStrength: 6,
   parallaxStrength: 12,
-  glowRadius: 220,
-  trailLength: 5,
+  glowRadius: 0,
+  trailLength: 0,
   transitionDistance: 22,
   springAmount: 1.08
 };
@@ -6609,7 +6601,7 @@ function applyProMotionPreset(name) {
       navIndicator: "glide",
       modalStyle: "scale-blur",
       backgroundMotion: "aurora",
-      cursorGlow: true,
+      cursorGlow: false,
       magneticButtons: true,
       rippleClicks: true,
       depthParallax: true,
@@ -6617,8 +6609,8 @@ function applyProMotionPreset(name) {
       animatedProgress: true,
       tiltStrength: 6,
       parallaxStrength: 12,
-      glowRadius: 220,
-      trailLength: 5,
+      glowRadius: 0,
+      trailLength: 0,
       transitionDistance: 22,
       springAmount: 1.08
     },
@@ -6636,7 +6628,7 @@ function applyProMotionPreset(name) {
       animatedProgress: true,
       tiltStrength: 3,
       parallaxStrength: 6,
-      glowRadius: 140,
+      glowRadius: 0,
       trailLength: 0,
       transitionDistance: 30,
       springAmount: 1.18
@@ -6666,7 +6658,7 @@ function applyProMotionPreset(name) {
       navIndicator: "beam",
       modalStyle: "hologram",
       backgroundMotion: "grid",
-      cursorGlow: true,
+      cursorGlow: false,
       magneticButtons: true,
       rippleClicks: true,
       depthParallax: true,
@@ -6674,8 +6666,8 @@ function applyProMotionPreset(name) {
       animatedProgress: true,
       tiltStrength: 9,
       parallaxStrength: 18,
-      glowRadius: 280,
-      trailLength: 8,
+      glowRadius: 0,
+      trailLength: 0,
       transitionDistance: 18,
       springAmount: 1.12
     }
@@ -8313,7 +8305,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.09";
+const APP_VERSION = "v0.10";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -9769,7 +9761,6 @@ const dashboardSearchResults = document.getElementById("dashboardSearchResults")
 function collectDashboardSearchItems() {
   const items = [
     { title: "Dashboard", subtitle: "Main overview", kind: "Page", view: "main", icon: "⌂" },
-    { title: "Settings", subtitle: "Appearance and account settings", kind: "Page", view: "settings", icon: "⚙" },
     { title: "Notes", subtitle: "Saved notes and documents", kind: "Page", view: "notes", icon: "TXT" },
     { title: "Game Systems", subtitle: "Game system registry", kind: "Page", view: "systems", icon: "SYS" }
   ];
@@ -10191,3 +10182,58 @@ try {
 } catch (error) {
   console.warn("[v0.09] Permanent layout sync deferred.", error);
 }
+
+
+/* =========================================================
+   v0.10 — NO SETTINGS / NO CURSOR DOT
+   ========================================================= */
+
+function removeAllCursorEffectsV010() {
+  proMotionSettings.cursorGlow = false;
+  proMotionSettings.trailLength = 0;
+  proMotionSettings.glowRadius = 0;
+
+  if (cursorGlowElement) {
+    cursorGlowElement.remove();
+    cursorGlowElement = null;
+  }
+
+  cursorTrailElements.forEach(element => element.remove());
+  cursorTrailElements = [];
+
+  document.querySelectorAll(
+    ".pro-cursor-glow-element, .pro-cursor-trail-dot, .cursor-glow, .cursor-trail, .mouse-glow, .crosshair-glow, .pointer-glow, .cursor-orb, .cursor-dot"
+  ).forEach(element => element.remove());
+
+  document.body.classList.add("cursor-effects-disabled");
+}
+
+const v010CursorObserver = new MutationObserver(() => {
+  document.querySelectorAll(
+    ".pro-cursor-glow-element, .pro-cursor-trail-dot, .cursor-glow, .cursor-trail, .mouse-glow, .crosshair-glow, .pointer-glow, .cursor-orb, .cursor-dot"
+  ).forEach(element => element.remove());
+});
+
+v010CursorObserver.observe(document.documentElement, { childList: true, subtree: true });
+
+const v010BaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationV010() {
+  if (activeView === "settings") activeView = "main";
+  v010BaseRenderNavigation();
+
+  Array.from(sidebarTabs.querySelectorAll(".tab-button")).forEach(button => {
+    if (button.querySelector(".tab-name")?.textContent?.trim() === "Settings") {
+      button.remove();
+    }
+  });
+
+  removeAllCursorEffectsV010();
+};
+
+const v010BaseSwitchView = switchView;
+switchView = function switchViewV010(nextView) {
+  if (nextView === "settings") nextView = "main";
+  return v010BaseSwitchView(nextView);
+};
+
+removeAllCursorEffectsV010();

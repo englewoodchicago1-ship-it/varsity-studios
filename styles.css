@@ -9681,3 +9681,44 @@ body.v009-vertical-nav .desktop-top-tabs {
     z-index: 90 !important;
   }
 }
+
+
+/* v0.10 — permanently remove cursor/crosshair dots and Settings nav */
+.pro-cursor-glow-element,
+.pro-cursor-trail-dot,
+.cursor-glow,
+.cursor-trail,
+.mouse-glow,
+.crosshair-glow,
+.pointer-glow,
+.cursor-orb,
+.cursor-dot {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Use the normal browser pointer. */
+html,
+body,
+button,
+a,
+input,
+select,
+textarea,
+label {
+  cursor: auto;
+}
+
+button,
+a,
+label[for],
+input[type="button"],
+input[type="submit"] {
+  cursor: pointer;
+}
