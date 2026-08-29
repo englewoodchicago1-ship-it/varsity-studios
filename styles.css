@@ -10523,3 +10523,14 @@ select:focus {
   display: none !important;
   opacity: 0 !important;
 }
+
+
+/* v0.14 — removed built-in sections */
+[data-go-view="websites"],
+[data-go-view="developer"],
+[data-go-view="team"],
+[data-go-view="releases"],
+[data-go-view="systems"],
+[data-go-view="notes"] {
+  display: none !important;
+}

@@ -524,3 +524,17 @@ All non-destructive accent surfaces, outlines, glows, buttons, tabs, folders, ca
 - Replaced legacy blue/purple constants with dark red, black, charcoal, and neutral gray equivalents.
 - Added a final zero-blue override so older styling layers cannot visually bleed through.
 - Current build: `v0.13`.
+
+
+## v0.14 — Minimal navigation
+Removed these built-in sections from the website navigation:
+- Global Websites
+- Developer Hub
+- Team
+- Releases
+- Game Systems
+- Notes
+
+Any old link or route pointing to one of those pages now falls back to Dashboard.
+Custom tabs remain available.
+Current build: `v0.14`.

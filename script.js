@@ -405,15 +405,7 @@ function renderNavigation() {
     active: activeView === "main",
     onClick: () => switchView("main")
   }));
-
-  sidebarTabs.appendChild(createNavigationButton({
-    label: "Global Websites",
-    mark: "◎",
-    active: activeView === "websites",
-    onClick: () => switchView("websites")
-  }));
-
-  tabs.forEach((tab, index) => {
+tabs.forEach((tab, index) => {
     sidebarTabs.appendChild(createNavigationButton({
       label: tab.name,
       mark: String(index + 1).padStart(2, "0"),
@@ -1632,15 +1624,7 @@ function renderNavigation() {
     active: activeView === "main",
     onClick: () => switchView("main")
   }));
-
-  sidebarTabs.appendChild(createNavigationButton({
-    label: "Global Websites",
-    mark: "◎",
-    active: activeView === "websites",
-    onClick: () => switchView("websites")
-  }));
-
-  const folderView = parseFolderView();
+const folderView = parseFolderView();
 
   tabs.forEach((tab, index) => {
     const tabIsActive =
@@ -2401,28 +2385,7 @@ function renderNavigation() {
     active: activeView === "main",
     onClick: () => switchView("main")
   }));
-
-  sidebarTabs.appendChild(createNavigationButton({
-    label: "Global Websites",
-    mark: "◎",
-    active: activeView === "websites",
-    onClick: () => switchView("websites")
-  }));
-
-  sidebarTabs.appendChild(createNavigationButton({
-    label: "Developer Hub",
-    mark: "</>",
-    active: activeView === "developer",
-    onClick: () => switchView("developer")
-  }));
-sidebarTabs.appendChild(createNavigationButton({
-    label: "Notes",
-    mark: "TXT",
-    active: activeView === "notes",
-    onClick: () => switchView("notes")
-  }));
-
-  const folderView = parseFolderView();
+const folderView = parseFolderView();
 
   tabs.forEach((tab, index) => {
     const tabIsActive =
@@ -3245,34 +3208,6 @@ function applyWorkspaceProfile() {
 const baseAdvancedRenderNavigation = renderNavigation;
 renderNavigation = function renderNavigationWithAdvancedTools() {
   baseAdvancedRenderNavigation();
-
-  const customTabButtons = Array.from(sidebarTabs.querySelectorAll(".tab-button")).slice(4);
-  const firstCustomTab = customTabButtons[0] || null;
-
-  const advancedButtons = [
-    createNavigationButton({
-      label: "Game Systems",
-      mark: "SYS",
-      active: activeView === "systems",
-      onClick: () => switchView("systems")
-    }),
-    createNavigationButton({
-      label: "Releases",
-      mark: "VER",
-      active: activeView === "releases",
-      onClick: () => switchView("releases")
-    }),
-    createNavigationButton({
-      label: "Team",
-      mark: "USR",
-      active: activeView === "team",
-      onClick: () => switchView("team")
-    })
-  ];
-
-  advancedButtons.reverse().forEach(button => {
-    sidebarTabs.insertBefore(button, firstCustomTab);
-  });
 };
 
 const baseAdvancedRenderCurrentView = renderCurrentView;
@@ -8305,7 +8240,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.13";
+const APP_VERSION = "v0.14";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -9052,30 +8987,6 @@ notesFileInput?.addEventListener("change", async () => {
 const notesBaseRenderNavigation = renderNavigation;
 renderNavigation = function renderNavigationWithNotes() {
   notesBaseRenderNavigation();
-
-  const existingNotes = Array.from(sidebarTabs.querySelectorAll(".tab-button"))
-    .find(button => button.querySelector(".tab-name")?.textContent?.trim() === "Notes");
-
-  if (!existingNotes) {
-    const notesButton = createNavigationButton({
-      label: "Notes",
-      mark: "TXT",
-      active: activeView === "notes",
-      onClick: () => switchView("notes")
-    });
-
-    const settingsButton = Array.from(sidebarTabs.querySelectorAll(".tab-button"))
-      .find(button => button.querySelector(".tab-name")?.textContent?.trim() === "Settings");
-
-    if (settingsButton) {
-      sidebarTabs.insertBefore(notesButton, settingsButton);
-    } else {
-      sidebarTabs.appendChild(notesButton);
-    }
-  }
-
-  const versionBadge = document.getElementById("appVersionBadge");
-  if (versionBadge) versionBadge.textContent = APP_VERSION;
 };
 
 const notesBaseRenderCurrentView = renderCurrentView;
@@ -9102,32 +9013,7 @@ switchView = function switchViewWithPermanentNotes(nextView) {
 
 /* v0.02 guaranteed permanent Notes navigation */
 function ensurePermanentNotesButton() {
-  if (!sidebarTabs) return;
-
-  let button = Array.from(sidebarTabs.querySelectorAll(".tab-button")).find(item =>
-    item.querySelector(".tab-name")?.textContent?.trim() === "Notes"
-  );
-
-  if (!button) {
-    button = createNavigationButton({
-      label: "Notes",
-      mark: "TXT",
-      active: activeView === "notes",
-      onClick: () => switchView("notes")
-    });
-
-    const settingsButton = Array.from(sidebarTabs.querySelectorAll(".tab-button")).find(item =>
-      item.querySelector(".tab-name")?.textContent?.trim() === "Settings"
-    );
-
-    if (settingsButton) {
-      sidebarTabs.insertBefore(button, settingsButton);
-    } else {
-      sidebarTabs.appendChild(button);
-    }
-  }
-
-  button.classList.toggle("active", activeView === "notes");
+  // Notes removed in v0.14.
 }
 
 const v002BaseRenderNavigation = renderNavigation;
@@ -9761,16 +9647,10 @@ const dashboardSearchResults = document.getElementById("dashboardSearchResults")
 function collectDashboardSearchItems() {
   const items = [
     { title: "Dashboard", subtitle: "Main overview", kind: "Page", view: "main", icon: "⌂" },
-    { title: "Notes", subtitle: "Saved notes and documents", kind: "Page", view: "notes", icon: "TXT" },
-    { title: "Game Systems", subtitle: "Game system registry", kind: "Page", view: "systems", icon: "SYS" }
   ];
 
   if (!isRestrictedNonOwner()) {
     items.push(
-      { title: "Global Websites", subtitle: "Saved website shortcuts", kind: "Page", view: "websites", icon: "◎" },
-      { title: "Developer Hub", subtitle: "Projects, tasks, IDs, snippets", kind: "Page", view: "developer", icon: "</>" },
-      { title: "Team", subtitle: "Varsity Studios team", kind: "Page", view: "team", icon: "USR" },
-      { title: "Releases", subtitle: "Release tracking", kind: "Page", view: "releases", icon: "VER" }
     );
   }
 
@@ -10237,3 +10117,33 @@ switchView = function switchViewV010(nextView) {
 };
 
 removeAllCursorEffectsV010();
+
+const V014_REMOVED_VIEWS = new Set(["websites", "developer", "team", "releases", "systems", "notes"]);
+
+function enforceV014MinimalNavigation() {
+  if (V014_REMOVED_VIEWS.has(activeView)) activeView = "main";
+
+  Array.from(sidebarTabs.querySelectorAll(".tab-button")).forEach(button => {
+    const label = button.querySelector(".tab-name")?.textContent?.trim();
+    if (["Global Websites", "Developer Hub", "Team", "Releases", "Game Systems", "Notes"].includes(label)) {
+      button.remove();
+    }
+  });
+}
+
+const v014BaseRenderNavigation = renderNavigation;
+renderNavigation = function renderNavigationV014() {
+  if (V014_REMOVED_VIEWS.has(activeView)) activeView = "main";
+  v014BaseRenderNavigation();
+  enforceV014MinimalNavigation();
+};
+
+const v014BaseSwitchView = switchView;
+switchView = function switchViewV014(nextView) {
+  if (V014_REMOVED_VIEWS.has(nextView)) nextView = "main";
+  return v014BaseSwitchView(nextView);
+};
+
+try {
+  enforceV014MinimalNavigation();
+} catch (error) {}
