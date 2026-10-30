@@ -8240,7 +8240,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.15";
+const APP_VERSION = "v0.16";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -10430,3 +10430,127 @@ try {
 } catch (error) {
   console.error("[v0.15] Hub initialization issue:", error);
 }
+
+/* =========================================================
+   v0.16 — FIXED CONTROL PANEL NAVIGATION / OWNER PROFILE
+   ========================================================= */
+
+const V016_PROFILE_PICTURE_URL = "https://i.postimg.cc/Nj81qhVG/image.png";
+const V016_OWNER_PFP_MARKER = "profilePictureV016DefaultApplied";
+const V016_NAV_ITEMS = [
+  { id: "overview", label: "Overview" },
+  { id: "audit-log", label: "Audit Log" },
+  { id: "moderation", label: "Moderation" },
+  { id: "player-editor", label: "Player Editor" },
+  { id: "anti-cheat", label: "Anti-Cheat" },
+  { id: "servers", label: "Servers" },
+  { id: "queue", label: "Queue" },
+  { id: "ranked", label: "Ranked" },
+  { id: "live-config", label: "Live Config" },
+  { id: "music", label: "Music" },
+  { id: "season-pass", label: "Season Pass" },
+  { id: "animations", label: "Animations" },
+  { id: "item-lookup", label: "Item Lookup" },
+  { id: "user-management", label: "User Management" }
+];
+
+function v016EnsureOwnerProfilePicture() {
+  if (currentUser?.username?.toLowerCase() !== "ykdrxc") return;
+  if (accountStorageGet(V016_OWNER_PFP_MARKER) === "true") return;
+
+  accountStorageSet(PROFILE_PICTURE_KEY, V016_PROFILE_PICTURE_URL);
+  accountStorageSet(V016_OWNER_PFP_MARKER, "true");
+}
+
+function v016RenderSidebarProfile() {
+  const footer = document.querySelector(".sidebar-footer");
+  if (!footer) return;
+
+  const user = getSignedInUser();
+  footer.innerHTML = `
+    <div class="sidebar-profile-card">
+      <img data-profile-avatar src="${escapeAttribute(getSavedProfilePicture())}" alt="${escapeAttribute(user.displayName)} profile picture" />
+      <div class="sidebar-profile-copy">
+        <strong>${escapeHtml(user.displayName)}</strong>
+        <small>${escapeHtml(user.roleLabel)}</small>
+      </div>
+    </div>
+    <button class="sidebar-logout-button" type="button" id="sidebarLogoutButton">
+      <span>↪</span> Log out
+    </button>
+  `;
+
+  footer.querySelector("#sidebarLogoutButton")?.addEventListener("click", () => logoutButton.click());
+}
+
+function v016RenderCurrentView() {
+  const selected = V016_NAV_ITEMS.find(item => item.id === activeView) || V016_NAV_ITEMS[0];
+  pageTitle.textContent = selected.label;
+  pageSubtitle.textContent = "";
+  contentTitle.textContent = selected.label;
+  tabContent.innerHTML = "";
+
+  document.querySelector(".content-kicker")?.classList.add("hidden");
+  document.querySelector(".content-header")?.classList.add("hidden");
+  document.querySelector(".content-actions")?.classList.add("hidden");
+  addFolderButton?.classList.add("hidden");
+  deleteTabButton?.classList.add("hidden");
+}
+
+function v016RenderNavigation() {
+  if (!V016_NAV_ITEMS.some(item => item.id === activeView)) {
+    activeView = "overview";
+  }
+
+  v016EnsureOwnerProfilePicture();
+  sidebarTabs.innerHTML = "";
+
+  V016_NAV_ITEMS.forEach((item, index) => {
+    sidebarTabs.appendChild(createNavigationButton({
+      label: item.label,
+      mark: String(index + 1).padStart(2, "0"),
+      active: activeView === item.id,
+      onClick: () => switchView(item.id)
+    }));
+  });
+
+  addTabButton?.remove();
+  addFolderButton?.classList.add("hidden");
+  deleteTabButton?.classList.add("hidden");
+  document.querySelector(".content-actions")?.classList.add("hidden");
+  document.querySelector(".sidebar-label")?.classList.add("hidden");
+  document.querySelector(".topbar-account")?.classList.add("hidden");
+
+  v016RenderSidebarProfile();
+  renderCurrentView();
+  updateSignedInIdentity();
+  updateProfilePictureUI();
+  applyRolePermissions();
+  addFolderButton?.classList.add("hidden");
+  deleteTabButton?.classList.add("hidden");
+  setupMobileDashboardControls();
+  saveData();
+}
+
+renderCurrentView = v016RenderCurrentView;
+renderNavigation = v016RenderNavigation;
+switchView = function switchViewV016(nextView) {
+  if (!V016_NAV_ITEMS.some(item => item.id === nextView)) return;
+  if (activeView === nextView) return;
+
+  activeView = nextView;
+  renderNavigation();
+  animateContentRefresh();
+};
+
+try {
+  document.documentElement.style.setProperty("--red", "#e61328");
+  document.documentElement.style.setProperty("--red-bright", "#f1263b");
+  document.documentElement.style.setProperty("--red-dark", "#8e0d1c");
+  document.documentElement.style.setProperty("--theme-glow", "rgba(230,19,40,0.12)");
+  document.documentElement.style.setProperty("--theme-top", "#101116");
+  document.documentElement.style.setProperty("--theme-middle", "#0b0c11");
+} catch (error) {
+  console.error("[v0.16] Navigation setup issue:", error);
+}
+
