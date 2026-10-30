@@ -8240,7 +8240,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.16";
+const APP_VERSION = "v0.17";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -10432,7 +10432,7 @@ try {
 }
 
 /* =========================================================
-   v0.16 — FIXED CONTROL PANEL NAVIGATION / OWNER PROFILE
+   v0.17 — FIXED CONTROL PANEL NAVIGATION / OWNER PROFILE
    ========================================================= */
 
 const V016_PROFILE_PICTURE_URL = "https://i.postimg.cc/Nj81qhVG/image.png";
@@ -10551,6 +10551,160 @@ try {
   document.documentElement.style.setProperty("--theme-top", "#101116");
   document.documentElement.style.setProperty("--theme-middle", "#0b0c11");
 } catch (error) {
-  console.error("[v0.16] Navigation setup issue:", error);
+  console.error("[v0.17] Navigation setup issue:", error);
 }
 
+
+
+/* =========================================================
+   v0.17 — SIMPLE CONTROL PANEL / ACCOUNT IDENTITY
+   ========================================================= */
+
+const V017_OWNER_USERNAME = "ykdrxc";
+const V017_OWNER_DISPLAY_NAME = "Zay (Zumbles)";
+
+const v017BaseGetSignedInUser = getSignedInUser;
+getSignedInUser = function getSignedInUserV017() {
+  const user = v017BaseGetSignedInUser();
+  if (String(user?.username || "").toLowerCase() === V017_OWNER_USERNAME) {
+    return { ...user, displayName: V017_OWNER_DISPLAY_NAME };
+  }
+  return user;
+};
+
+function v017RestoreBrandLogo() {
+  const logo = document.getElementById("signedInBrandLogo");
+  if (!logo) return;
+  logo.src = "assets/varsity-logo.png";
+  logo.alt = "Varsity Studios logo";
+  logo.classList.remove("account-profile-image");
+  logo.removeAttribute("data-profile-avatar");
+}
+
+/* Keep the personal avatar on the account card only, never on the studio brand. */
+syncAllAccountAvatars = function syncAllAccountAvatarsV017() {
+  if (!currentUser) return;
+  const source = getSavedProfilePicture();
+  const displayName = getSignedInUser().displayName;
+  const targets = new Set([
+    ...document.querySelectorAll("[data-profile-avatar]"),
+    ...document.querySelectorAll(".welcome-panel > img")
+  ]);
+  targets.forEach(image => {
+    if (!(image instanceof HTMLImageElement)) return;
+    image.src = source;
+    image.alt = `${displayName} profile picture`;
+    image.classList.add("account-profile-image");
+  });
+  v017RestoreBrandLogo();
+};
+
+const v017BaseUpdateProfilePictureUI = updateProfilePictureUI;
+updateProfilePictureUI = function updateProfilePictureUIV017() {
+  v017BaseUpdateProfilePictureUI();
+  v017RestoreBrandLogo();
+};
+
+function v017RenderSidebarProfile() {
+  const footer = document.querySelector(".sidebar-footer");
+  if (!footer) return;
+
+  const user = getSignedInUser();
+  footer.innerHTML = `
+    <div class="sidebar-profile-card">
+      <img data-profile-avatar src="${escapeAttribute(getSavedProfilePicture())}" alt="${escapeAttribute(user.displayName)} profile picture" />
+      <div class="sidebar-profile-copy">
+        <strong>${escapeHtml(user.displayName)}</strong>
+        <small>${escapeHtml(user.roleLabel)}</small>
+      </div>
+    </div>
+    <div class="sidebar-account-actions">
+      <button class="sidebar-settings-button" type="button" data-sidebar-view="settings">
+        <span aria-hidden="true">⚙</span> Settings
+      </button>
+      <button class="sidebar-logout-button" type="button" id="sidebarLogoutButton">
+        <span aria-hidden="true">↪</span> Log out
+      </button>
+    </div>
+  `;
+
+  footer.querySelector("[data-sidebar-view='settings']")?.addEventListener("click", () => switchView("settings"));
+  footer.querySelector("#sidebarLogoutButton")?.addEventListener("click", () => logoutButton.click());
+}
+
+function v017RenderCurrentView() {
+  if (activeView === "settings") {
+    pageTitle.textContent = "Settings";
+    pageSubtitle.textContent = "";
+    contentTitle.textContent = "Settings";
+    document.querySelector(".content-kicker")?.classList.add("hidden");
+    document.querySelector(".content-header")?.classList.add("hidden");
+    document.querySelector(".content-actions")?.classList.add("hidden");
+    addFolderButton?.classList.add("hidden");
+    deleteTabButton?.classList.add("hidden");
+    renderSettingsPage();
+    return;
+  }
+
+  v016RenderCurrentView();
+}
+
+function v017RenderNavigation() {
+  const isSettingsView = activeView === "settings";
+  if (!isSettingsView && !V016_NAV_ITEMS.some(item => item.id === activeView)) {
+    activeView = "overview";
+  }
+
+  v016EnsureOwnerProfilePicture();
+  sidebarTabs.innerHTML = "";
+
+  const marks = ["◫", "≡", "◉", "♙", "⌁", "▣", "☷", "♜", "⚙", "♫", "★", "▶", "⌕", "♟"];
+  V016_NAV_ITEMS.forEach((item, index) => {
+    sidebarTabs.appendChild(createNavigationButton({
+      label: item.label,
+      mark: marks[index],
+      active: activeView === item.id,
+      onClick: () => switchView(item.id)
+    }));
+  });
+
+  addTabButton?.remove();
+  addFolderButton?.classList.add("hidden");
+  deleteTabButton?.classList.add("hidden");
+  document.querySelector(".content-actions")?.classList.add("hidden");
+  document.querySelector(".sidebar-label")?.classList.add("hidden");
+  document.querySelector(".topbar-account")?.classList.add("hidden");
+
+  v017RenderSidebarProfile();
+  v017RenderCurrentView();
+  updateSignedInIdentity();
+  updateProfilePictureUI();
+  v017RestoreBrandLogo();
+  applyRolePermissions();
+  addFolderButton?.classList.add("hidden");
+  deleteTabButton?.classList.add("hidden");
+  setupMobileDashboardControls();
+  saveData();
+}
+
+renderCurrentView = v017RenderCurrentView;
+renderNavigation = v017RenderNavigation;
+switchView = function switchViewV017(nextView) {
+  if (nextView !== "settings" && !V016_NAV_ITEMS.some(item => item.id === nextView)) return;
+  if (activeView === nextView) return;
+  activeView = nextView;
+  renderNavigation();
+  animateContentRefresh();
+};
+
+try {
+  document.documentElement.style.setProperty("--red", "#a91d31");
+  document.documentElement.style.setProperty("--red-bright", "#cf2940");
+  document.documentElement.style.setProperty("--red-dark", "#68111f");
+  document.documentElement.style.setProperty("--theme-glow", "rgba(130,18,35,0.07)");
+  document.documentElement.style.setProperty("--theme-top", "#111216");
+  document.documentElement.style.setProperty("--theme-middle", "#0b0c10");
+  v017RestoreBrandLogo();
+} catch (error) {
+  console.error("[v0.17] UI setup issue:", error);
+}

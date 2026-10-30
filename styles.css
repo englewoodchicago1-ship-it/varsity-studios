@@ -10883,3 +10883,282 @@ body.auth-unlocked .content-shell {
   min-height: 0;
 }
 
+
+
+/* =========================================================
+   v0.17 — COMPACT CONTROL PANEL VISUAL STYLE
+   ========================================================= */
+body.auth-unlocked {
+  color: #e5e6e9;
+  background: #0b0c10;
+}
+
+body.auth-unlocked .background-glow {
+  display: none;
+}
+
+body.auth-unlocked .dashboard-view {
+  grid-template-columns: 218px minmax(0, 1fr);
+  min-height: 100vh;
+  background: #0b0c10;
+}
+
+body.auth-unlocked .sidebar {
+  min-width: 0;
+  padding: 15px 11px 12px;
+  background: #101115;
+  border-right: 1px solid rgba(255,255,255,0.065);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+body.auth-unlocked .sidebar-brand {
+  align-items: center;
+  gap: 9px;
+  padding: 3px 8px 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.065);
+}
+
+body.auth-unlocked .sidebar-logo {
+  width: 35px;
+  height: 35px;
+  border-radius: 7px;
+  object-fit: contain;
+}
+
+body.auth-unlocked .sidebar-brand .eyebrow {
+  margin-bottom: 2px;
+  color: #777b84;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+}
+
+body.auth-unlocked .sidebar-brand h2 {
+  color: #e4e5e8;
+  font-size: 0.79rem;
+  letter-spacing: 0.08em;
+}
+
+body.auth-unlocked .sidebar-tabs {
+  flex: 1 1 auto;
+  gap: 2px;
+  margin-top: 12px;
+  padding-right: 1px;
+  overflow-y: auto;
+}
+
+body.auth-unlocked .nav-section-label {
+  display: none;
+}
+
+body.auth-unlocked .sidebar-tabs .tab-button {
+  min-height: 35px;
+  flex: 0 0 35px;
+  gap: 9px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #a1a4ad;
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 520;
+  text-align: left;
+  box-shadow: none;
+  transform: none;
+}
+
+body.auth-unlocked .sidebar-tabs .tab-button:hover {
+  color: #ececef;
+  background: rgba(255,255,255,0.035);
+}
+
+body.auth-unlocked .sidebar-tabs .tab-button.active {
+  color: #f3e9eb;
+  border-color: rgba(170,27,48,0.14);
+  background: rgba(143,20,39,0.17);
+  box-shadow: inset 2px 0 0 #b31f35;
+}
+
+body.auth-unlocked .sidebar-tabs .tab-mark {
+  display: grid;
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  color: #a94a59;
+  background: transparent;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+body.auth-unlocked .sidebar-tabs .tab-button.active .tab-mark {
+  color: #e04a5e;
+  background: transparent;
+}
+
+body.auth-unlocked .sidebar-tabs .tab-arrow {
+  display: none;
+}
+
+body.auth-unlocked .sidebar-footer {
+  gap: 8px;
+  margin-top: auto;
+  padding: 11px 2px 0;
+  border-top: 1px solid rgba(255,255,255,0.065);
+}
+
+body.auth-unlocked .sidebar-profile-card {
+  gap: 9px;
+  padding: 5px 4px 7px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+body.auth-unlocked .sidebar-profile-card > img {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+body.auth-unlocked .sidebar-profile-copy strong {
+  color: #e5e6e9;
+  font-size: 0.73rem;
+  font-weight: 650;
+}
+
+body.auth-unlocked .sidebar-profile-copy small {
+  margin-top: 2px;
+  color: #777c86;
+  font-size: 0.61rem;
+}
+
+body.auth-unlocked .sidebar-account-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+body.auth-unlocked .sidebar-settings-button,
+body.auth-unlocked .sidebar-logout-button {
+  display: flex;
+  min-width: 0;
+  min-height: 33px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 6px;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  color: #9da1aa;
+  background: #15161b;
+  font-size: 0.67rem;
+  font-weight: 550;
+  text-align: center;
+  cursor: pointer;
+}
+
+body.auth-unlocked .sidebar-settings-button:hover,
+body.auth-unlocked .sidebar-logout-button:hover {
+  color: #f0e6e8;
+  border-color: rgba(178,31,53,0.28);
+  background: rgba(140,20,38,0.14);
+}
+
+body.auth-unlocked .sidebar-settings-button span,
+body.auth-unlocked .sidebar-logout-button span {
+  color: #bd5362;
+  font-size: 0.82rem;
+}
+
+body.auth-unlocked .dashboard-main {
+  min-width: 0;
+  padding: 24px clamp(18px, 2.7vw, 36px) 30px;
+  background: #0c0d11;
+}
+
+body.auth-unlocked .topbar {
+  min-height: 42px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+body.auth-unlocked .topbar .eyebrow {
+  color: #777b85;
+  font-size: 0.59rem;
+  letter-spacing: 0.13em;
+}
+
+body.auth-unlocked .topbar h1 {
+  margin: 2px 0 0;
+  color: #e6e7ea;
+  font-size: 1.42rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+body.auth-unlocked .page-subtitle {
+  display: none;
+}
+
+body.auth-unlocked .topbar-right {
+  gap: 8px;
+}
+
+body.auth-unlocked .dashboard-search-wrap,
+body.auth-unlocked #dashboardSearchButton {
+  display: none !important;
+}
+
+body.auth-unlocked .dashboard-build-chip {
+  min-height: 27px;
+  padding: 0 8px;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  background: #14151a;
+  box-shadow: none;
+}
+
+body.auth-unlocked .dashboard-build-chip strong {
+  color: #c9cbd1;
+  font-size: 0.63rem;
+}
+
+body.auth-unlocked .dashboard-build-chip small {
+  color: #8c8f98;
+  font-size: 0.53rem;
+}
+
+body.auth-unlocked .content-shell {
+  min-height: calc(100vh - 90px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.auth-unlocked .tab-content {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+}
+
+@media (max-width: 860px) {
+  body.auth-unlocked .dashboard-view {
+    grid-template-columns: 1fr;
+  }
+  body.auth-unlocked .sidebar {
+    padding: 15px 12px 12px;
+  }
+  body.auth-unlocked .sidebar-tabs {
+    max-height: calc(100vh - 210px);
+  }
+  body.auth-unlocked .dashboard-main {
+    padding: 20px 15px 26px;
+  }
+}

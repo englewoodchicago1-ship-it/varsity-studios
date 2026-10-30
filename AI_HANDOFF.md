@@ -5,17 +5,15 @@ Use this file when continuing the website with another coding assistant or devel
 ## Project
 - Website: https://varsitystudios.net
 - Hosting: GitHub Pages (static website)
-- Main stack: HTML, CSS, vanilla JavaScript, Supabase JavaScript client.
-- This repository is the source of truth. Do not rely on a previous chat to understand the project.
+- Stack: HTML, CSS, vanilla JavaScript, Supabase JavaScript client.
+- The GitHub repository is the source of truth. Inspect the current files before editing.
 
-## Main files
-- `index.html` — page structure, login screen, dialogs, and script/style references.
-- `styles.css` — all dashboard styling and responsive layouts.
-- `script.js` — authentication, account state, navigation, UI behavior, and Supabase reads/writes.
-- `assets/` — logos and static images.
-- `v015-hub.js` — legacy/unused v0.15 hub file; the active v0.15 code is already included in `script.js`.
+## Current version and numbering
+- Current build: **v0.17**.
+- Continue with v0.18, then restart major numbering at v1.0, continue v1.1 through v1.18, then v2.1 and onward.
+- Update `APP_VERSION`, visible version labels, and cache-busting query strings together when making a release.
 
-## Current v0.16 navigation requirement
+## Navigation
 The signed-in sidebar must show exactly these 14 items, in this order:
 1. Overview
 2. Audit Log
@@ -32,31 +30,41 @@ The signed-in sidebar must show exactly these 14 items, in this order:
 13. Item Lookup
 14. User Management
 
-These are currently navigation placeholders. Each page is intentionally blank. Do not add sample cards, fake data, settings pages, store pages, or other sections unless explicitly requested. There is no visible Create a tab feature. Do not restore custom workspace tabs to the sidebar.
+These 14 pages are intentionally blank placeholders until requested. Do not add sample cards, fake data, or extra navigation items. There is no Create a tab feature and no top-right Search control.
 
-The owner profile image is set to the image URL in the v0.16 profile-picture constant in `script.js`. Keep it as the default for the owner unless the owner explicitly asks to change it.
+Settings is a separate utility action in the bottom account area beside Log out; it is not one of the 14 sidebar tabs. Keep it available as a hidden route from that bottom action.
 
-## Supabase
-- Supabase project URL and the frontend publishable key are configured at the top of `script.js`.
-- The site uses Supabase Auth for sign-in.
-- The `profiles` table provides the signed-in user's username, display name, and role.
-- The `dashboard_data` table stores account-scoped dashboard data as JSON.
-- The frontend uses a publishable key. Never put a Supabase secret key, service-role key, database password, or private token in `index.html`, `script.js`, `styles.css`, or any committed file.
+## Account and branding
+- The top-left brand must always use `assets/varsity-logo.png` (Varsity Studios logo), never the owner's personal profile picture.
+- The owner's profile picture belongs only in the bottom account card.
+- The owner display name shown in the UI is **Zay (Zumbles)**. This is a front-end display label only; do not change Supabase credentials, auth username, or database identity to implement it.
+- Preserve the current owner profile picture URL and user profile-picture settings.
+
+## Visual direction
+- Match the supplied Practical's Games control-panel reference: compact, simple left sidebar; straightforward page header; minimal borders and effects; restrained selected-row highlight.
+- Use charcoal/dark gray, black, and muted Varsity red. Avoid blue accents, bright glows, oversized cards, or decorative gradients.
+- Keep the interface responsive.
+
+## Main files
+- `index.html` — login, dashboard structure, dialogs, and script/style references.
+- `styles.css` — all dashboard styling.
+- `script.js` — authentication, account state, navigation, UI behavior, and Supabase reads/writes.
+- `assets/` — logo and static images.
+- `v015-hub.js` — legacy/unused file; the active code is in `script.js`.
+
+## Supabase safety
+- The frontend uses the Supabase publishable key.
+- Never commit a Supabase secret key, service-role key, database password, or private token.
 - Do not delete or recreate Supabase users, profiles, or dashboard data when making UI changes.
 - Do not change login routing or authentication behavior unless explicitly requested.
 
-## Design and implementation preferences
-- Keep the existing dark charcoal/black UI with Varsity red accents (`#e61328`).
-- Keep changes limited to what was requested. Do not redesign unrelated areas or add features without asking.
-- Preserve existing login, Supabase cloud sync, account roles, and mobile navigation.
-- This is a static GitHub Pages site; do not assume there is a Node build process or backend server.
-- Bump the cache-busting query version in `index.html` when updating `script.js` or `styles.css`, and keep the visible `APP_VERSION` in sync.
-
 ## Deploying changes
-1. Edit the files in the repository root.
-2. Preserve the existing `CNAME` file and other repository configuration files.
-3. Commit and push the changed files to the branch used by GitHub Pages.
-4. Test the live site after deployment, including login, sidebar navigation, logout, and mobile layout.
+1. Edit files in the repository root.
+2. Preserve `CNAME` and other repository configuration files.
+3. Commit and push to the branch used by GitHub Pages.
+4. Test login, sidebar navigation, Settings, logout, and mobile layout after deployment.
 
-## Safe working rule
-Before changing a feature, inspect the existing implementation and make the smallest safe change. Do not replace the whole application with a new template. Do not claim a change was tested in a live browser unless it actually was.
+## Working rules
+- Inspect the existing implementation before changing it.
+- Make only requested changes; do not replace the application with a new template.
+- Do not claim live browser testing unless it was actually performed.
