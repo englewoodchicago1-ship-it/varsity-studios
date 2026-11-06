@@ -10886,7 +10886,7 @@ body.auth-unlocked .content-shell {
 
 
 /* =========================================================
-   v0.17 — COMPACT CONTROL PANEL VISUAL STYLE
+   v0.18 — COMPACT CONTROL PANEL VISUAL STYLE
    ========================================================= */
 body.auth-unlocked {
   color: #e5e6e9;
@@ -11161,4 +11161,61 @@ body.auth-unlocked .tab-content {
   body.auth-unlocked .dashboard-main {
     padding: 20px 15px 26px;
   }
+}
+
+/* v0.18 — sharper control-panel corners */
+.sidebar-tabs .tab-button,
+.sidebar-settings-button,
+.sidebar-logout-button,
+.settings-panel,
+.settings-panel input,
+.settings-panel button,
+.password-form input,
+.password-form button,
+.page-shell .panel,
+.page-shell .card,
+.page-shell .section-card {
+  border-radius: 2px !important;
+}
+
+.settings-panel {
+  max-width: 720px;
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.password-form label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.password-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+}
+
+.password-form button.primary-action {
+  width: fit-content;
+  min-width: 150px;
+  padding: 10px 16px;
+}
+
+.form-status {
+  min-height: 18px;
+  font-size: 13px;
+}
+
+.form-status.error {
+  color: #f06b75;
+}
+
+.form-status.success {
+  color: #63d38b;
 }

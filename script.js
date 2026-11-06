@@ -438,6 +438,14 @@ function switchView(nextView) {
   animateContentRefresh();
 }
 
+function bindSettingsPage() {
+  const form = document.getElementById("change-password-form");
+  if (form && !form.dataset.bound) {
+    form.dataset.bound = "true";
+    form.addEventListener("submit", handleChangePassword);
+  }
+}
+
 function renderCurrentView() {
   const isCustomTab = activeView.startsWith("tab:");
 
@@ -2935,155 +2943,117 @@ async function copyText(value) {
 }
 
 function renderSettingsPage() {
-  const currentColorway = COLORWAYS[dashboardSettings.colorway] || COLORWAYS.varsity;
-
-  pageTitle.textContent = "Settings";
-  pageSubtitle.textContent = "Personalize the Varsity Studios dashboard.";
-  contentTitle.textContent = "Dashboard Settings";
-
-  tabContent.innerHTML = `
-    <div class="settings-page">
-      <section class="settings-panel">
-        <div class="settings-heading">
-          <div>
-            <span class="dashboard-kicker">APPEARANCE</span>
-            <h3>Colorway</h3>
-            <p>Choose the main color used throughout the dashboard.</p>
-          </div>
+  return `
+    <div class="page-shell settings-page">
+      <div class="page-header">
+        <div>
+          <div class="page-kicker">ACCOUNT</div>
+          <h1>Settings</h1>
+          <p>Manage your account password.</p>
         </div>
-
-        <div class="colorway-grid">
-          ${Object.entries(COLORWAYS).map(([key, colorway]) => `
-            <button
-              class="colorway-option ${dashboardSettings.colorway === key ? "selected" : ""}"
-              type="button"
-              data-colorway="${key}"
-            >
-              <span class="colorway-preview" style="--preview-primary:${colorway.red};--preview-bright:${colorway.bright};--preview-dark:${colorway.dark};"></span>
-              <span>
-                <strong>${escapeHtml(colorway.name)}</strong>
-                <small>${dashboardSettings.colorway === key ? "Currently selected" : "Select colorway"}</small>
-              </span>
-              <span class="colorway-check">✓</span>
-            </button>
-          `).join("")}
-        </div>
-      </section>
+      </div>
 
       <section class="settings-panel">
-        <div class="settings-heading">
+        <div class="settings-panel-header">
           <div>
-            <span class="dashboard-kicker">LAYOUT</span>
-            <h3>Interface preferences</h3>
-            <p>Control spacing, corners, descriptions, and visual motion.</p>
+            <h2>Change Password</h2>
+            <p>Verify your current password before setting a new one.</p>
           </div>
         </div>
 
-        <div class="settings-control-list">
-          ${renderSettingsSelect(
-            "Interface density",
-            "Choose how much space buttons and panels use.",
-            "settingDensity",
-            dashboardSettings.density,
-            [["compact", "Compact"], ["comfortable", "Comfortable"]]
-          )}
+        <form id="change-password-form" class="password-form">
+          <label for="current-password">Current Password</label>
+          <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" required>
 
-          ${renderSettingsSelect(
-            "Panel corners",
-            "Choose between round or sharper dashboard panels.",
-            "settingCorners",
-            dashboardSettings.corners,
-            [["rounded", "Rounded"], ["sharp", "Sharper"]]
-          )}
+          <label for="new-password">New Password</label>
+          <input id="new-password" name="newPassword" type="password" autocomplete="new-password" required>
 
-          ${renderSettingsSelect(
-            "Animations",
-            "Reduce dashboard transitions when you prefer less movement.",
-            "settingMotion",
-            dashboardSettings.motion,
-            [["full", "Full animations"], ["reduced", "Reduced animations"]]
-          )}
+          <label for="confirm-password">Confirm New Password</label>
+          <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" required>
 
-          ${renderSettingsToggle(
-            "Background glow",
-            "Show the colored glow behind the dashboard.",
-            "settingBackgroundGlow",
-            dashboardSettings.backgroundGlow
-          )}
-
-          ${renderSettingsToggle(
-            "Folder descriptions",
-            "Show folder descriptions on category cards.",
-            "settingDescriptions",
-            dashboardSettings.showDescriptions
-          )}
-        </div>
-      </section>
-
-      <section class="settings-panel danger-settings-panel">
-        <div class="settings-heading">
-          <div>
-            <span class="dashboard-kicker">DATA MANAGEMENT</span>
-            <h3>Reset options</h3>
-            <p>Reset only appearance settings or erase the locally saved developer tools.</p>
-          </div>
-        </div>
-
-        <div class="settings-danger-actions">
-          <button id="resetAppearanceButton" class="secondary-button" type="button">Reset appearance</button>
-          <button id="clearDeveloperDataButton" class="danger-button" type="button">Clear Developer Hub</button>
-        </div>
+          <div id="password-change-status" class="form-status" aria-live="polite"></div>
+          <button type="submit" class="primary-action">Update Password</button>
+        </form>
       </section>
     </div>
   `;
+}
 
-  tabContent.querySelectorAll("[data-colorway]").forEach(button => {
-    button.addEventListener("click", () => {
-      dashboardSettings.colorway = button.dataset.colorway;
-      saveDashboardSettings();
-      applyDashboardSettings();
-      renderSettingsPage();
-    });
-  });
+async function handleChangePassword(event) {
+  event.preventDefault();
 
-  document.getElementById("settingDensity").addEventListener("change", event => {
-    dashboardSettings.density = event.target.value;
-    saveAndRefreshSettings();
-  });
+  const form = event.currentTarget;
+  const status = form.querySelector("#password-change-status");
+  const currentPassword = form.currentPassword.value;
+  const newPassword = form.newPassword.value;
+  const confirmPassword = form.confirmPassword.value;
 
-  document.getElementById("settingCorners").addEventListener("change", event => {
-    dashboardSettings.corners = event.target.value;
-    saveAndRefreshSettings();
-  });
+  status.textContent = "";
+  status.className = "form-status";
 
-  document.getElementById("settingMotion").addEventListener("change", event => {
-    dashboardSettings.motion = event.target.value;
-    saveAndRefreshSettings();
-  });
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    status.textContent = "Fill in all password fields.";
+    status.classList.add("error");
+    return;
+  }
 
-  document.getElementById("settingBackgroundGlow").addEventListener("change", event => {
-    dashboardSettings.backgroundGlow = event.target.checked;
-    saveAndRefreshSettings();
-  });
+  if (newPassword !== confirmPassword) {
+    status.textContent = "New passwords do not match.";
+    status.classList.add("error");
+    return;
+  }
 
-  document.getElementById("settingDescriptions").addEventListener("change", event => {
-    dashboardSettings.showDescriptions = event.target.checked;
-    saveAndRefreshSettings();
-  });
+  if (newPassword.length < 6) {
+    status.textContent = "New password must be at least 6 characters.";
+    status.classList.add("error");
+    return;
+  }
 
-  document.getElementById("resetAppearanceButton").addEventListener("click", () => {
-    dashboardSettings = { ...defaultSettings };
-    saveDashboardSettings();
-    applyDashboardSettings();
-    renderSettingsPage();
-  });
+  const supabaseClient = window.supabase;
+  if (!supabaseClient?.auth) {
+    status.textContent = "Authentication is unavailable.";
+    status.classList.add("error");
+    return;
+  }
 
-  document.getElementById("clearDeveloperDataButton").addEventListener("click", () => {
-    if (!window.confirm("Clear all projects, tasks, saved IDs, and code snippets?")) return;
-    developerData = structuredClone(defaultDeveloperData);
-    saveDeveloperData();
-    renderSettingsPage();
-  });
+  try {
+    status.textContent = "Verifying current password...";
+
+    const { data: userData, error: userError } =
+      await supabaseClient.auth.getUser();
+
+    if (userError || !userData?.user?.email) {
+      throw userError || new Error("Unable to determine the signed-in account.");
+    }
+
+    const { error: verifyError } =
+      await supabaseClient.auth.signInWithPassword({
+        email: userData.user.email,
+        password: currentPassword
+      });
+
+    if (verifyError) {
+      status.textContent = "Current password is incorrect.";
+      status.classList.add("error");
+      return;
+    }
+
+    status.textContent = "Updating password...";
+
+    const { error: updateError } =
+      await supabaseClient.auth.updateUser({ password: newPassword });
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    form.reset();
+    status.textContent = "Password updated successfully.";
+    status.classList.add("success");
+  } catch (error) {
+    status.textContent = error?.message || "Password update failed.";
+    status.classList.add("error");
+  }
 }
 
 function renderSettingsSelect(title, detail, id, value, options) {
@@ -8240,7 +8210,7 @@ renderSettingsPage = function renderSettingsPageWithGuaranteedProfileSection() {
    GENERAL FILES, NOTES, VERSION
    ========================================================= */
 
-const APP_VERSION = "v0.17";
+const APP_VERSION = "v0.18";
 const NOTES_STORAGE_KEY = "varsityNotesV1";
 const MAX_GENERAL_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_GENERAL_FILES_PER_FOLDER = 20;
@@ -9741,7 +9711,7 @@ document.addEventListener("keydown", event => {
 
 function renderAccountDirectoryRows() {
   const knownAccounts = [
-    { username: "ykdrxc", displayName: "Drxco", role: "Owner" }
+    { username: "ykdrxc", displayName: "Zay (Zumbles)", role: "Owner" }
   ];
 
   return knownAccounts.map(account => `
@@ -10432,7 +10402,7 @@ try {
 }
 
 /* =========================================================
-   v0.17 — FIXED CONTROL PANEL NAVIGATION / OWNER PROFILE
+   v0.18 — FIXED CONTROL PANEL NAVIGATION / OWNER PROFILE
    ========================================================= */
 
 const V016_PROFILE_PICTURE_URL = "https://i.postimg.cc/Nj81qhVG/image.png";
@@ -10551,13 +10521,13 @@ try {
   document.documentElement.style.setProperty("--theme-top", "#101116");
   document.documentElement.style.setProperty("--theme-middle", "#0b0c11");
 } catch (error) {
-  console.error("[v0.17] Navigation setup issue:", error);
+  console.error("[v0.18] Navigation setup issue:", error);
 }
 
 
 
 /* =========================================================
-   v0.17 — SIMPLE CONTROL PANEL / ACCOUNT IDENTITY
+   v0.18 — SIMPLE CONTROL PANEL / ACCOUNT IDENTITY
    ========================================================= */
 
 const V017_OWNER_USERNAME = "ykdrxc";
@@ -10706,5 +10676,12 @@ try {
   document.documentElement.style.setProperty("--theme-middle", "#0b0c10");
   v017RestoreBrandLogo();
 } catch (error) {
-  console.error("[v0.17] UI setup issue:", error);
+  console.error("[v0.18] UI setup issue:", error);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  bindSettingsPage();
+
+  const observer = new MutationObserver(() => bindSettingsPage());
+  observer.observe(document.body, { childList: true, subtree: true });
+});

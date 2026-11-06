@@ -541,4 +541,4 @@ Current build: `v0.14`.
 
 
 ## Version numbering
-Current release: v0.17. Use v0.18 next, then v1.0 through v1.18, then v2.1 onward. See `AI_HANDOFF.md` for the full UI and safety requirements.
+Current release: v0.18. Use v0.18 next, then v1.0 through v1.18, then v2.1 onward. See `AI_HANDOFF.md` for the full UI and safety requirements.

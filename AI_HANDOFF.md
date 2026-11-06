@@ -9,7 +9,7 @@ Use this file when continuing the website with another coding assistant or devel
 - The GitHub repository is the source of truth. Inspect the current files before editing.
 
 ## Current version and numbering
-- Current build: **v0.17**.
+- Current build: **v0.18**.
 - Continue with v0.18, then restart major numbering at v1.0, continue v1.1 through v1.18, then v2.1 and onward.
 - Update `APP_VERSION`, visible version labels, and cache-busting query strings together when making a release.
 
