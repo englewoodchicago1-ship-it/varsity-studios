@@ -12,14 +12,14 @@
     document.body.classList.add("public-home");
     games.removeAttribute("aria-hidden");
     login.setAttribute("aria-hidden", "true");
-    window.scrollTo({ top: 0, behavior: "instant" });
+    window.scrollTo(0, 0);
   }
 
   function showStudio() {
     document.body.classList.remove("public-home");
     games.setAttribute("aria-hidden", "true");
     login.setAttribute("aria-hidden", "false");
-    window.scrollTo({ top: 0, behavior: "instant" });
+    window.scrollTo(0, 0);
     document.getElementById("username")?.focus({ preventScroll: true });
   }
 
