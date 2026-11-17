@@ -4,6 +4,7 @@ body.public-home {
   overflow-x: hidden !important;
   overflow-y: auto !important;
 }
+body.auth-locked .background-glow,
 body.public-home .background-glow,
 body.public-home .app-version-badge,
 body.public-home #siteLoadingScreen { display: none !important; }
@@ -65,7 +66,10 @@ body:not(.public-home) #publicGamesView {
   border-radius: 4px;
   color: #e9eaf0;
   background: #14161b;
-  font: 600 12px/1.2 inherit;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 600;
   cursor: pointer;
   transition: border-color 150ms ease, background 150ms ease;
 }
