@@ -330,6 +330,7 @@ function saveData() {
 }
 
 function setLoggedIn(value) {
+  if (value) document.body.classList.remove("public-home");
   document.body.classList.toggle("auth-locked", !value);
   document.body.classList.toggle("auth-unlocked", value);
 
@@ -355,7 +356,7 @@ function setLoggedIn(value) {
     passwordInput.type = "password";
     togglePassword.textContent = "Show";
     loginError.textContent = "";
-    usernameInput.focus();
+    if (!document.body.classList.contains("public-home")) usernameInput.focus();
   }
 }
 
@@ -3903,46 +3904,7 @@ function renderTeamList() {
 applyWorkspaceProfile();
 
 
-/* Loading screen and styled delete confirmations */
-const siteLoadingScreen = document.getElementById("siteLoadingScreen");
-const siteLoadingProgress = document.getElementById("siteLoadingProgress");
-const siteLoadingStatus = document.getElementById("siteLoadingStatus");
-
-document.body.classList.add("site-loading-active");
-
-function runSiteLoadingSequence() {
-  const stages = [
-    { progress: 18, message: "Preparing workspace...", delay: 180 },
-    { progress: 43, message: "Loading studio systems...", delay: 520 },
-    { progress: 68, message: "Organizing development data...", delay: 880 },
-    { progress: 88, message: "Finalizing dashboard...", delay: 1260 },
-    { progress: 100, message: "Ready.", delay: 1640 }
-  ];
-
-  stages.forEach(stage => {
-    setTimeout(() => {
-      siteLoadingProgress.style.width = `${stage.progress}%`;
-      siteLoadingStatus.textContent = stage.message;
-    }, stage.delay);
-  });
-
-  setTimeout(() => {
-    siteLoadingScreen.classList.add("finished");
-    document.body.classList.remove("site-loading-active");
-    document.body.classList.add("site-loading-complete");
-  }, 2050);
-
-  setTimeout(() => {
-    siteLoadingScreen.remove();
-  }, 3000);
-}
-
-if (document.readyState === "complete") {
-  runSiteLoadingSequence();
-} else {
-  window.addEventListener("load", runSiteLoadingSequence, { once: true });
-}
-
+/* Loading screen removed in v0.19. Styled delete confirmations remain below. */
 const confirmationDialog = document.getElementById("confirmationDialog");
 const confirmationTitle = document.getElementById("confirmationTitle");
 const confirmationMessage = document.getElementById("confirmationMessage");
