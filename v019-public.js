@@ -1,4 +1,4 @@
-/* Varsity Studios v1.0 — Public Games, details, and Studio navigation */
+/* Varsity Studios v1.1 — Public Games, details, and Studio navigation */
 (() => {
   const publicView = document.getElementById("publicGamesView");
   const gamesHome = document.getElementById("gamesHomePage");
@@ -7,11 +7,12 @@
   const studioButton = document.getElementById("openStudioButton");
   const gamesButton = document.getElementById("backToGamesButton");
   const footballButton = document.getElementById("openFootballDetail");
+  const listButton = document.getElementById("openFootballFromList");
   const backButton = document.getElementById("backToGamesDetail");
   const topBackButton = document.getElementById("allGamesTopButton");
 
   if (![publicView, gamesHome, footballDetail, loginView, studioButton, gamesButton,
-    footballButton, backButton, topBackButton].every(Boolean)) return;
+    footballButton, listButton, backButton, topBackButton].every(Boolean)) return;
 
   function resetScroll() {
     window.scrollTo(0, 0);
@@ -55,6 +56,7 @@
   studioButton.addEventListener("click", showStudio);
   gamesButton.addEventListener("click", showGames);
   footballButton.addEventListener("click", displayFootballPage);
+  listButton.addEventListener("click", displayFootballPage);
   backButton.addEventListener("click", displayGamesPage);
   topBackButton.addEventListener("click", displayGamesPage);
 
