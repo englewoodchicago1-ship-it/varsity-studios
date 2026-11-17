@@ -1,0 +1,118 @@
+/* Varsity Studios v1.1.1 — true square navigation tiles.
+   Two equal columns of 90px-style squares, not long horizontal rows. */
+body.auth-unlocked .sidebar .sidebar-tabs {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: auto !important;
+  align-content: start !important;
+  justify-content: stretch !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin-top: 12px !important;
+  padding: 1px 2px 8px 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: #403038 transparent;
+}
+
+body.auth-unlocked .sidebar .sidebar-tabs .tab-button {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: 1 / 1 !important;
+  flex: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 9px 5px !important;
+  margin: 0 !important;
+  border-radius: 2px !important;
+  border: 1px solid #2c2c33 !important;
+  background: #141418 !important;
+  color: #b9b9c2 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  text-align: center !important;
+  font-size: 10px !important;
+}
+
+body.auth-unlocked .sidebar .sidebar-tabs .tab-button:hover {
+  background: #27191f !important;
+  border-color: #9b4054 !important;
+  color: #fff !important;
+  transform: none !important;
+}
+
+body.auth-unlocked .sidebar .sidebar-tabs .tab-button.active {
+  background: #3b1521 !important;
+  border-color: #bb4359 !important;
+  color: #fff !important;
+  box-shadow: inset 0 2px 0 #dc4b65 !important;
+}
+
+body.auth-unlocked .sidebar .sidebar-tabs .tab-button .tab-mark {
+  display: grid !important;
+  flex: 0 0 auto !important;
+  place-items: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  border-radius: 3px !important;
+  background: #27191f !important;
+  color: #d65b73 !important;
+  font-size: 17px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+
+body.auth-unlocked .sidebar .sidebar-tabs .tab-button.active .tab-mark {
+  background: #612333 !important;
+  color: #ff9aad !important;
+}
+
+body.auth-unlocked .sidebar .sidebar-tabs .tab-button .tab-name {
+  display: block !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+  font-size: 10px !important;
+  font-weight: 650 !important;
+  letter-spacing: -.015em !important;
+  line-height: 1.22 !important;
+  text-align: center !important;
+  color: inherit !important;
+}
+
+body.auth-unlocked .sidebar .sidebar-tabs .tab-button .tab-arrow {
+  display: none !important;
+}
+
+@media (max-width: 860px) {
+  body.auth-unlocked .sidebar .sidebar-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-content: start !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body.auth-unlocked .sidebar .sidebar-tabs .tab-button .tab-name {
+    font-size: 9.5px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.auth-unlocked .sidebar .sidebar-tabs .tab-button {
+    transition: none !important;
+  }
+}
