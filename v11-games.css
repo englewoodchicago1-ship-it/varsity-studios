@@ -293,3 +293,73 @@ body:not(.public-home) #publicGamesView { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   #publicGamesView button, #publicGamesView a { transition: none; }
 }
+
+/* Varsity Football community links — v1.1.2 */
+#publicGamesView .vg-stage-actions,
+#publicGamesView .vg-detail-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+#publicGamesView .vg-stage-actions {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+#publicGamesView .vg-discord-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 15px;
+  min-height: 43px;
+  color: #f2e7ed;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  background: #222028;
+  border: 1px solid #57444f;
+  border-radius: 0 !important;
+  white-space: nowrap;
+}
+#publicGamesView .vg-discord-link:hover {
+  background: #362531;
+  border-color: #bf718c;
+  color: #fff;
+}
+#publicGamesView .vg-stage-actions .vg-stage-button {
+  min-height: 43px;
+}
+#publicGamesView .vg-detail-actions {
+  justify-content: flex-start;
+  margin-top: 27px;
+}
+#publicGamesView .vg-detail-actions .vg-primary-link {
+  min-height: 43px;
+}
+@media (max-width: 1110px) {
+  #publicGamesView .vg-stage-caption {
+    flex-wrap: wrap;
+  }
+  #publicGamesView .vg-stage-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+@media (max-width: 680px) {
+  #publicGamesView .vg-stage-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #publicGamesView .vg-stage-actions .vg-stage-button,
+  #publicGamesView .vg-stage-actions .vg-discord-link {
+    width: 100%;
+    min-width: 0;
+    padding: 12px 10px;
+    justify-content: center;
+  }
+}
+@media (max-width: 380px) {
+  #publicGamesView .vg-stage-actions { grid-template-columns: 1fr; }
+}
