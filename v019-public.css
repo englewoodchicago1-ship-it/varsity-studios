@@ -1,0 +1,339 @@
+/* Varsity Studios v0.19: public games entry and simple studio sign-in */
+body.public-home {
+  background: #090a0d !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+body.public-home .background-glow,
+body.public-home .app-version-badge,
+body.public-home #siteLoadingScreen { display: none !important; }
+body.public-home.auth-locked #loginView.login-view {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body:not(.public-home) #publicGamesView {
+  display: none !important;
+}
+#publicGamesView {
+  min-height: 100dvh;
+  background: linear-gradient(180deg, #0b0c10 0%, #08090b 64%, #0b0c10 100%);
+  color: #eceef2;
+  position: relative;
+  z-index: 5;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.public-site-header {
+  height: 58px;
+  border-bottom: 1px solid #202126;
+  background: #0c0d10;
+}
+.public-site-header-inner {
+  height: 100%;
+  max-width: 1100px;
+  padding: 0 24px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.public-brand {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: #eceef2;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 750;
+  letter-spacing: -.015em;
+}
+.public-brand img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.public-header-action {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid #292b31;
+  border-radius: 4px;
+  color: #e9eaf0;
+  background: #14161b;
+  font: 600 12px/1.2 inherit;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.public-header-action:hover {
+  background: #202126;
+  border-color: #4a3339;
+}
+.public-header-action:focus-visible,
+#loginView .login-form button:focus-visible {
+  outline: 2px solid #bd3b4e;
+  outline-offset: 3px;
+}
+.public-header-action svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.public-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 86px 24px 100px;
+}
+.public-hero {
+  text-align: center;
+  margin: 0 auto 76px;
+  max-width: 680px;
+}
+.public-hero-icon {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  margin: 0 auto 19px;
+  display: block;
+}
+.public-kicker {
+  color: #b6b7c0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.public-hero h1 {
+  color: #f6f7f9;
+  font-size: clamp(38px, 5.6vw, 58px);
+  line-height: 1.08;
+  letter-spacing: -.055em;
+  margin: 10px 0 14px;
+  font-weight: 800;
+}
+.public-hero p {
+  color: #9499a6;
+  line-height: 1.65;
+  font-size: 15px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.public-hero-details {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-top: 30px;
+  color: #9ba0aa;
+  font-size: 11px;
+  letter-spacing: .06em;
+  font-weight: 700;
+}
+.public-hero-details span + span { border-left: 1px solid #272932; padding-left: 30px; }
+.public-hero-details strong { color: #d4d5dc; }
+.public-game-list { max-width: 1010px; margin: auto; }
+.public-list-heading {
+  margin: 0 0 16px;
+  color: #d0d2da;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.public-game-card {
+  display: grid;
+  grid-template-columns: minmax(235px, 38%) minmax(0, 1fr);
+  border: 1px solid #282a30;
+  border-radius: 6px;
+  background: #13151a;
+  overflow: hidden;
+}
+.public-game-art {
+  min-height: 255px;
+  padding: 30px;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(135deg, #360c16, #171219 52%, #090a0e);
+}
+.public-game-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 48px, rgba(255,255,255,.035) 49px 50px, transparent 51px 95px),
+    linear-gradient(125deg, transparent 30%, rgba(171,34,58,.28) 52%, transparent 76%);
+  z-index: -1;
+}
+.public-game-art::after {
+  content: "VF";
+  font-size: clamp(105px, 12vw, 185px);
+  font-weight: 900;
+  color: rgba(230, 54, 77, .18);
+  position: absolute;
+  top: 17px;
+  right: 12px;
+  line-height: 1;
+  transform: skew(-10deg);
+  z-index: -1;
+}
+.public-game-art-content { display: flex; flex-direction: column; gap: 7px; }
+.public-game-art-content span {
+  color: #efacb5;
+  font-size: 10px;
+  letter-spacing: .18em;
+  font-weight: 800;
+}
+.public-game-art-content strong {
+  color: white;
+  font-size: clamp(25px, 4vw, 37px);
+  text-transform: uppercase;
+  line-height: 1.04;
+  letter-spacing: -.04em;
+  max-width: 210px;
+}
+.public-game-info {
+  padding: 29px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.public-game-eyebrow {
+  color: #d95c70;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+.public-game-info h2 {
+  font-size: clamp(21px, 2.8vw, 28px);
+  margin: 9px 0 9px;
+  letter-spacing: -.03em;
+  color: #f3f4f7;
+}
+.public-game-info p {
+  margin: 0;
+  color: #a0a3ad;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.public-game-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 23px; }
+.public-game-tags span {
+  color: #c7c9d0;
+  font-size: 10px;
+  padding: 5px 9px;
+  background: #1b1e23;
+  border: 1px solid #292c33;
+  border-radius: 3px;
+}
+.public-game-footer {
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid #282b30;
+  color: #868b96;
+  font-size: 11px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.public-game-dot { width: 6px; height: 6px; border-radius: 50%; background: #c33f57; }
+.public-bottom {
+  text-align: center;
+  color: #5e636c;
+  font-size: 11px;
+  margin-top: 62px;
+}
+/* The login retains the existing username / Supabase workflow, with a simpler appearance. */
+#loginView.login-view { background: #090a0d !important; }
+#loginView .background-glow,
+#loginView .login-background-title,
+#loginView .login-build-chip,
+#loginView .revamp-login-version { display: none !important; }
+#loginView .revamp-login-header {
+  height: 58px !important;
+  background: #0c0d10 !important;
+  border-bottom: 1px solid #202126 !important;
+  padding: 0 max(24px, calc((100vw - 1052px)/2)) !important;
+}
+#loginView .revamp-login-brand strong { font-size: 14px !important; }
+#loginView .login-card {
+  width: min(430px, calc(100% - 28px)) !important;
+  padding: 32px !important;
+  border: 1px solid #272930 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  background: #14161a !important;
+}
+#loginView .brand-centered {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 9px !important;
+  margin-bottom: 30px !important;
+}
+#loginView .brand-centered .brand-logo {
+  width: 68px !important;
+  height: 68px !important;
+  margin-bottom: 8px !important;
+}
+#loginView #loginTitle {
+  font-size: 23px !important;
+  font-weight: 760 !important;
+  line-height: 1.2 !important;
+  margin: 0 0 8px !important;
+  letter-spacing: -.03em !important;
+}
+#loginView .brand-centered .eyebrow { display: none !important; }
+#loginView .login-helper {
+  color: #969aa5;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+}
+#loginView .login-form label { font-size: 12px !important; text-transform: none !important; letter-spacing: 0 !important; }
+#loginView .login-form input {
+  border: 1px solid #292c32 !important;
+  background: #0f1115 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+#loginView .login-form input:focus {
+  border-color: #a13345 !important;
+  box-shadow: 0 0 0 2px rgba(156,37,56,.11) !important;
+}
+#loginView .primary-button {
+  border-radius: 4px !important;
+  border: 1px solid #982b3e !important;
+  background: #88283a !important;
+  box-shadow: none !important;
+}
+#loginView .primary-button:hover { background: #a63146 !important; }
+#loginView .field-icon { display: none !important; }
+#loginView .password-toggle { border-radius: 3px !important; }
+@media (max-width: 680px) {
+  .public-site-header-inner { padding: 0 16px; }
+  .public-main { padding: 72px 16px 64px; }
+  .public-hero { margin-bottom: 56px; }
+  .public-hero-icon { width: 74px; height: 74px; }
+  .public-game-card { grid-template-columns: 1fr; }
+  .public-game-art { min-height: 215px; }
+  .public-game-info { padding: 26px 21px; }
+  .public-hero-details { gap: 16px; }
+  .public-hero-details span + span { padding-left: 16px; }
+  #loginView .revamp-login-header { padding: 0 16px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .public-header-action { transition: none; }
+}
