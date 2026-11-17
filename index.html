@@ -8,97 +8,124 @@
   <link rel="icon" type="image/png" href="assets/favicon.png" />
   <link rel="apple-touch-icon" href="assets/favicon.png" />
   <title>Varsity Studios | Games</title>
-  <link rel="stylesheet" href="styles.css?v=1.0" />
-  <link rel="stylesheet" href="v019-public.css?v=1.0" />
+  <link rel="stylesheet" href="styles.css?v=1.1" />
+  <link rel="stylesheet" href="v019-public.css?v=1.1" />
+  <link rel="stylesheet" href="v11-games.css?v=1.1" />
 </head>
 <body class="auth-locked public-home">
 
   <div class="background-glow" aria-hidden="true"></div>
 
-  <main id="publicGamesView" class="vf-public" aria-label="Varsity Studios games">
-    <header class="vf-sitebar">
-      <div class="vf-sitebar-inner">
-        <a href="./" class="vf-brand" aria-label="Varsity Studios home"><img src="assets/varsity-logo.png" alt="" /><span>VARSITY <strong>STUDIOS</strong></span></a>
-        <nav class="vf-header-actions" aria-label="Public navigation">
-          <button type="button" id="allGamesTopButton" class="vf-nav-back" hidden>← All Games</button>
-          <button type="button" id="openStudioButton" class="vf-studio-link">Studio <span aria-hidden="true">↗</span></button>
+  <main id="publicGamesView" class="vg-public" aria-label="Varsity Studios Games">
+    <header class="vg-header">
+      <div class="vg-header-inner">
+        <a class="vg-brand" href="./" aria-label="Varsity Studios Games home">
+          <img src="assets/varsity-logo.png" alt="" />
+          <span>VARSITY <strong>STUDIOS</strong></span>
+        </a>
+        <nav class="vg-header-actions" aria-label="Website navigation">
+          <span class="vg-header-index" aria-hidden="true">VARSITY / 001</span>
+          <button type="button" id="allGamesTopButton" class="vg-all-games" hidden>← Games</button>
+          <button type="button" id="openStudioButton" class="vg-studio-button">Studio <span aria-hidden="true">↗</span></button>
         </nav>
       </div>
     </header>
-    <div id="gamesHomePage" class="vf-games-home">
-      <section class="vf-landing-hero">
-        <div class="vf-hero-copy">
-          <span class="vf-eyebrow">VARSITY STUDIOS / ROBLOX SPORTS</span>
-          <h1>BUILT FOR<br /><em>THE GAME.</em></h1>
-          <p>Welcome to Varsity Studios. Discover our sports experiences, where competition, creativity, and player skill come first.</p>
-          <div class="vf-hero-underline"><span>01</span> EXPERIENCE IN OUR LINEUP</div>
+
+    <section id="gamesHomePage" class="vg-home" aria-labelledby="vgHomeTitle">
+      <div class="vg-home-intro">
+        <div>
+          <span class="vg-overline"><span class="vg-line"></span> VARSITY STUDIOS / GAME SELECT</span>
+          <h1 id="vgHomeTitle">PICK YOUR <em>FIELD.</em></h1>
         </div>
-        <div class="vf-hero-graphic" aria-hidden="true">
-          <div class="vf-playbook-circle"></div><div class="vf-graphic-stripe"></div>
-          <div class="vf-graphic-mark">VF</div><div class="vf-playbook-tag">VARSITY / 01</div>
-        </div>
-      </section>
-      <section class="vf-games-section" aria-labelledby="vfGamesHeading">
-        <div class="vf-section-heading">
-          <div><span class="vf-eyebrow">OUR LINEUP</span><h2 id="vfGamesHeading">Explore the field</h2></div>
-          <span class="vf-section-count">01 GAME</span>
-        </div>
-        <button type="button" id="openFootballDetail" class="vf-game-card" aria-label="View Varsity Football details">
-          <span class="vf-game-cover" aria-hidden="true">
-            <span class="vf-cover-grid"></span><span class="vf-cover-emblem">VF</span>
-            <span class="vf-cover-caption">VARSITY STUDIOS <strong>FOOTBALL</strong></span>
-          </span>
-          <span class="vf-game-card-copy">
-            <span class="vf-game-category">FEATURED EXPERIENCE · FOOTBALL</span>
-            <strong class="vf-game-name">Varsity Football</strong>
-            <span class="vf-game-description">Build your player, master your movement, and take your game onto the field.</span>
-            <span class="vf-game-pills"><span>Player Creation</span><span>1v1 Matchups</span><span>Fieldhouse</span></span>
-            <span class="vf-game-bottom"><span>VARSITY STUDIOS ORIGINAL</span><span class="vf-game-details">Explore Game <span aria-hidden="true">↗</span></span></span>
-          </span>
-        </button>
-      </section>
-    </div>
-    <div id="footballDetailPage" class="vf-detail" hidden>
-      <div class="vf-detail-container">
-        <button type="button" id="backToGamesDetail" class="vf-detail-back">← Back to Games</button>
-        <section class="vf-detail-hero" aria-labelledby="vfDetailTitle">
-          <div class="vf-detail-hero-pattern" aria-hidden="true"><span>VF</span></div>
-          <div class="vf-detail-hero-content">
-            <span class="vf-eyebrow">VARSITY STUDIOS ORIGINAL / FOOTBALL</span>
-            <h1 id="vfDetailTitle">VARSITY<br /><em>FOOTBALL.</em></h1>
-            <p>Your field. Your player. Your moment. Find your style and compete in Varsity Football on Roblox.</p>
-            <div class="vf-detail-buttons">
-              <a class="vf-play-link" href="https://www.roblox.com/games/114530535954335" target="_blank" rel="noopener noreferrer">View on Roblox ↗</a>
-              <span class="vf-roblox-label">ROBLOX EXPERIENCE</span>
-            </div>
+        <p>One studio. Games made for competition.<br />Choose an experience and make your mark.</p>
+      </div>
+
+      <div class="vg-game-layout">
+        <aside class="vg-selector" aria-label="Available games">
+          <div class="vg-selector-title">
+            <span>GAME LIBRARY</span>
+            <span>01 / 01</span>
           </div>
-          <div class="vf-detail-field" aria-hidden="true"><div class="vf-field-ring"></div><span>01 / VF</span></div>
-        </section>
-        <div class="vf-detail-facts">
-          <div><span>01 / BUILD</span><strong>Create your player</strong></div>
-          <div><span>02 / PLAY</span><strong>Compete in 1v1</strong></div>
-          <div><span>03 / OWN</span><strong>Your Fieldhouse</strong></div>
-        </div>
-        <div class="vf-detail-columns">
-          <section class="vf-about-panel">
-            <span class="vf-eyebrow">ABOUT THE GAME</span><h2>Make every play count.</h2>
-            <p>Varsity Football brings player creation, movement, and head-to-head football together. Develop your playstyle, find your matchups, and step onto the field.</p>
-            <div class="vf-about-divider"></div><h3>Built for the way you play</h3>
-            <p>From learning the controls to making the next big play, it's all about having room to compete and improve.</p>
-          </section>
-          <section class="vf-features-panel">
-            <span class="vf-eyebrow">INSIDE VARSITY FOOTBALL</span><h2>The experience</h2>
-            <div class="vf-feature-grid">
-              <article class="vf-feature"><span>01</span><strong>Player Creation</strong><p>Build a player with your own identity.</p></article>
-              <article class="vf-feature"><span>02</span><strong>1v1 Football</strong><p>Go head-to-head and compete for the win.</p></article>
-              <article class="vf-feature"><span>03</span><strong>Fieldhouse</strong><p>Take the field in your own space.</p></article>
-              <article class="vf-feature"><span>04</span><strong>Movement &amp; Skill</strong><p>Make your plays through timing and control.</p></article>
+          <button type="button" id="openFootballFromList" class="vg-selector-game">
+            <span class="vg-selector-id">01</span>
+            <span class="vg-selector-copy"><strong>Varsity Football</strong><small>FOOTBALL / ROBLOX</small></span>
+            <span class="vg-selector-arrow" aria-hidden="true">↗</span>
+          </button>
+          <div class="vg-selector-empty">
+            <span class="vg-selector-plus" aria-hidden="true">+</span>
+            <strong>More from Varsity</strong>
+            <small>New experiences will join the lineup.</small>
+          </div>
+          <div class="vg-selector-bottom">
+            <span class="vg-small-red-dot" aria-hidden="true"></span>
+            <span>BUILT ON ROBLOX</span>
+          </div>
+        </aside>
+
+        <section class="vg-feature-stage" aria-labelledby="vgFeatureTitle">
+          <div class="vg-stage-art" aria-hidden="true">
+            <div class="vg-yard-lines"></div>
+            <div class="vg-center-circle"></div>
+            <div class="vg-stage-logo">VF</div>
+            <span class="vg-stage-number">01 — VF</span>
+            <span class="vg-side-type">VARSITY / FOOTBALL / 001</span>
+          </div>
+          <div class="vg-stage-caption">
+            <div class="vg-stage-copy">
+              <span class="vg-stage-kicker">FEATURED EXPERIENCE / 001</span>
+              <h2 id="vgFeatureTitle">VARSITY FOOTBALL</h2>
+              <p>Create your player. Own your field. Compete head-to-head.</p>
             </div>
-          </section>
+            <button type="button" id="openFootballDetail" class="vg-stage-button">View Game <span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+      </div>
+
+      <div class="vg-under-grid">
+        <div><span>01</span><strong>CREATE</strong><small>Build your player</small></div>
+        <div><span>02</span><strong>COMPETE</strong><small>Match up in 1v1</small></div>
+        <div><span>03</span><strong>PLAY</strong><small>Step into your Fieldhouse</small></div>
+        <div class="vg-under-label">BUILT FOR YOUR NEXT PLAY.</div>
+      </div>
+    </section>
+
+    <section id="footballDetailPage" class="vg-details" aria-labelledby="vfDetailTitle" hidden>
+      <div class="vg-detail-topline">
+        <button type="button" id="backToGamesDetail" class="vg-back">← Back to Games</button>
+        <span>GAME / 001 — VARSITY FOOTBALL</span>
+      </div>
+      <div class="vg-detail-grid">
+        <div class="vg-detail-left">
+          <div class="vg-detail-heading">
+            <span class="vg-overline"><span class="vg-line"></span> FROM VARSITY STUDIOS</span>
+            <h1 id="vfDetailTitle">THE FIELD<br />IS <em>YOURS.</em></h1>
+            <p>Build your identity, challenge the competition, and turn every possession into a chance to make a play.</p>
+            <a class="vg-primary-link" href="https://www.roblox.com/games/114530535954335" target="_blank" rel="noopener noreferrer">Open on Roblox <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="vg-detail-story">
+            <span class="vg-detail-label">THE EXPERIENCE</span>
+            <h2>Varsity Football</h2>
+            <p>Take the field with your own player. Practice your movement, learn the timing, and compete in one-on-one football matches.</p>
+          </div>
+        </div>
+        <div class="vg-detail-right">
+          <div class="vg-detail-art" aria-hidden="true">
+            <div class="vg-detail-field-lines"></div>
+            <div class="vg-detail-art-mark">VF</div>
+            <div class="vg-detail-art-footer"><span>VARSITY FOOTBALL</span><span>001 / 001</span></div>
+          </div>
+          <div class="vg-detail-featurelist">
+            <div><span class="vg-detail-feature-id">01</span><span><strong>Player creation</strong><small>Build your own football identity.</small></span></div>
+            <div><span class="vg-detail-feature-id">02</span><span><strong>1v1 matchups</strong><small>Take on opponents and make every play count.</small></span></div>
+            <div><span class="vg-detail-feature-id">03</span><span><strong>Your Fieldhouse</strong><small>A place to play, practice, and compete.</small></span></div>
+          </div>
         </div>
       </div>
-    </div>
-    <footer class="vf-site-footer"><div><img src="assets/varsity-logo.png" alt="" /><span>VARSITY STUDIOS</span></div><span>BUILT FOR THE GAME.</span></footer>
+    </section>
+
+    <footer class="vg-footer">
+      <span>© VARSITY STUDIOS</span><span>FOOTBALL. COMPETITION. COMMUNITY.</span>
+    </footer>
   </main>
 
   <main id="loginView" class="login-view">
@@ -188,7 +215,7 @@
         <div class="topbar-right">
           <div class="build-chip dashboard-build-chip" title="Varsity Studios dashboard version">
             <span class="build-dot"></span>
-            <strong>v1.0</strong>
+            <strong>v1.1</strong>
             <small>LIVE</small>
           </div>
           <button id="addTabButton" class="primary-button compact" type="button">
@@ -545,9 +572,9 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=1.0"></script>
+  <script src="script.js?v=1.1"></script>
   <script src="v018-settings.js?v=0.18"></script>
-  <script src="v019-public.js?v=1.0"></script>
-  <div id="appVersionBadge" class="app-version-badge" aria-label="Website version">v1.0</div>
+  <script src="v019-public.js?v=1.1"></script>
+  <div id="appVersionBadge" class="app-version-badge" aria-label="Website version">v1.1</div>
 </body>
 </html>
